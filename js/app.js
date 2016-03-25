@@ -30,6 +30,9 @@ var board = {
 	'spaces' : new Array(this.rows)
 };
 
+// Hold turn (by player piece color)
+var turn;
+
 // Holds move request
 var moveRequest = {};
 
@@ -46,8 +49,8 @@ document.addEventListener("mouseup", function(event) {
 	// Translate move into whole space numbers on the board
 	moveRequest = {
 		'x' : Math.floor(x / space.width),
-		'y' : Math.floor(y / space.height)};
-	console.log('x: ' + moveRequest.x + ', y: ' + moveRequest.y);
+		'y' : Math.floor(y / space.height)
+	};
 }, false);
 
 function initBoard() {
@@ -81,7 +84,10 @@ var Player = function(name, color) {
 
 // Update player's pieces
 Player.prototype.update = function(dt) {
-	this.handleInput(moveRequest);
+	// Check that it's our turn
+	if (turn === this.color) {
+		this.handleInput(moveRequest);
+	};
 };
 
 // Account for user input
@@ -92,10 +98,147 @@ Player.prototype.handleInput = function(move) {
 		move.y < board.rows &&
 		move.y >= 0) {
 		//Check if move is legal
+		if (this.isALegalMove(move)) {
+			// Place user token in spot
+			board.spaces[move.x][move.y] = this.color;
 
-		// Place user token in spot
-		board.spaces[move.x][move.y] = this.color;
+			// Advance turn once move has been taken
+			turn = (turn === 'white') ? 'black' : 'white';
+		}
 	}
+};
+
+// Finds if move is allowed under the rules of reversi
+Player.prototype.isALegalMove = function(move) {
+	// Establish which color piece to look for a match for
+	var myToken = turn;
+	var targetToken = (turn === 'black') ? 'white' : 'black';
+
+	// TODO: This section seems it could be more DRY
+	// Search Up
+	// If space above has a piece of the opponent's color
+	if (board.spaces[move.x][move.y - 1] === targetToken) {
+		// Look up each space until the top of the board for one of my pieces
+		for (var space = move.y - 2; space >= 0; space--) {
+			// If my piece is found return true; there's at least 1 legal move
+			if (board.spaces[move.x][space] === myToken) {
+				return true;
+			}
+		}
+	}
+
+	// Search Down
+	// If space below has a piece of the opponent's color
+	if (board.spaces[move.x][move.y + 1] === targetToken) {
+		// Check each space until the bottom of the board for one of my pieces
+		for (var space = move.y + 2; space < board.rows; space++) {
+			// If my piece is found return true; there's at least 1 legal move
+			if (board.spaces[move.x][space] === myToken) {
+				return true;
+			}
+		}
+	}
+
+	// Search Left
+	// Check that searchable space is in bounds
+	if (move.x - 2 >= 0) {
+		// If space on left has a piece of the opponent's color
+		if (board.spaces[move.x - 1][move.y] === targetToken) {
+			// Check each space until the left of the board for one of my pieces
+			for (var space = move.x - 2; space >= 0; space--) {
+				// If my piece is found return true; there's at least 1 legal move
+				if (board.spaces[space][move.y] === myToken) {
+					return true;
+				}
+			}
+		}
+	}
+
+	// Search Right
+	// Check that the searchable space is in bounds
+	if (move.x + 2 < board.rows) {
+		// If space to the right has a piece of the opponent's color
+		if (board.spaces[move.x + 1][move.y] === targetToken) {
+			// Check each space until the right of the board for one of my pieces
+			for (var space = move.x + 2; space < board.cols; space++) {
+				// If my piece is found return true; there's at least 1 legal move
+				if (board.spaces[space][move.y] === myToken) {
+					return true;
+				}
+			}
+		}
+	}
+
+	// Search Negative Diagonal
+	// Check that the searchable space is in bounds
+	if (move.x - 2 >= 0 && move.y - 2 >= 0) {
+		// If space up and left has a piece of the opponent's color
+		if (board.spaces[move.x - 1][move.y - 1] === targetToken) {
+			// Check for my piece until the top left space of the board
+			var delta = 2;
+			while (move.x - delta >= 0 && move.y - delta >= 0) {
+				// If my piece is found return true; there's at least 1 legal move
+				if (board.spaces[move.x - delta][move.y - delta] === myToken) {
+					return true;
+				}
+				delta++;
+			}
+		}
+	}
+
+	// Search Positive Diagonal
+	// Check that the searchable space is in bounds
+	if (move.x + 2 < board.cols && move.y + 2 < board.rows) {
+		// If space down and right has a piece of the opponent's color
+		if (board.spaces[move.x + 1][move.y + 1] === targetToken) {
+			// Check for my piece until the bottom right space of the board
+			var delta = 2;
+			while (move.x + delta < board.cols && move.y + delta < board.rows) {
+				// If my piece is found return true; there's at least 1 legal move
+				if (board.spaces[move.x + delta][move.y + delta] === myToken) {
+					return true;
+				}
+				delta++;
+			}
+		}
+	}
+
+	// Search Negative Sub-Diagonal
+	// Check that the searchable space is in bounds
+	if (move.x - 2 >= 0 && move.y + 2 < board.rows) {
+		// If space down and left has a piece of the opponent's color
+		if (board.spaces[move.x - 1][move.y + 1] === targetToken) {
+			// Check for my piece until the bottom left space of the board
+			var delta = 2;
+			while (move.x - delta >= 0 && move.y + delta < board.rows) {
+				// If my piece is found return true; there's at least 1 legal move
+				if (board.spaces[move.x - delta][move.y + delta] === myToken) {
+					return true;
+				}
+				delta++;
+			}
+		}
+	}
+
+	// Search Positive Sub-Diagonal
+	// Check that the searchable space is in bounds
+	if (move.x + 2 < board.cols && move.y - 2 >= 0) {
+		// If space up and right has a piece of the opponent's color
+		if (board.spaces[move.x + 1][move.y - 1] === targetToken) {
+			// Check for my piece until the top right space of the board
+			var delta = 2;
+			while (move.x + delta < board.cols && move.y - delta >= 0) {
+				// If my piece is found return true; there's at least 1 legal move
+				if (board.spaces[move.x + delta][move.y + delta] === myToken) {
+					return true;
+				}
+				delta++;
+			}
+		}
+	}
+
+	// If no legal move was found, return false
+	return false;
 };
 
 // Draw players pieces on the canvas
@@ -133,6 +276,8 @@ function initGame() {
     // Instantiate players
     player1 = new Player('Danny', 'black');
 	player2 = new Player('Lauren', 'white');
+	// Set turn to 0
+	turn = 'black';
     // Make the scoreboard
     //score = new Scoreboard();
 }

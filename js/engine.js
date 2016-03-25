@@ -133,6 +133,7 @@ var Engine = (function(global) {
         //    enemy.update(dt);
         //});
         player1.update(dt);
+        player2.update(dt);
         //stars.update(dt);
         //messages.update(dt);
     }
