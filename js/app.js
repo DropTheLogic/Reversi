@@ -87,42 +87,65 @@ Player.prototype.update = function(dt) {
 	// Check that it's our turn
 	if (turn === this.color) {
 		this.handleInput(moveRequest);
-	};
+	}
 };
 
 // Account for user input
 Player.prototype.handleInput = function(move) {
-	// Check if move is in bounds
+	// Check if move is in bounds and not already taken
 	if (move.x < board.cols &&
 		move.x >= 0 &&
 		move.y < board.rows &&
-		move.y >= 0) {
-		//Check if move is legal
-		if (this.isALegalMove(move)) {
-			// Place user token in spot
-			board.spaces[move.x][move.y] = this.color;
+		move.y >= 0 &&
+		board.spaces[move.x][move.y] === undefined) {
 
-			// Advance turn once move has been taken
+		// Attempt to take turn from user input.
+		// If takeTurn(move) determines the current move is valid,
+		//  turnTaken will evaluate to true
+		var turnTaken = this.takeTurn(move);
+
+		// If turn was taken, reset moveRequest and advance turn
+		if (turnTaken) {
+			moveRequest = {};
 			turn = (turn === 'white') ? 'black' : 'white';
+			console.log("************************");
+			console.log("Now it's " + turn + "'s turn!");
 		}
 	}
 };
 
-// Finds if move is allowed under the rules of reversi
-Player.prototype.isALegalMove = function(move) {
+// If given move request was successful, this method will flip game pieces
+//  and return true. Otherwise it returns false
+Player.prototype.takeTurn = function(move) {
 	// Establish which color piece to look for a match for
 	var myToken = turn;
 	var targetToken = (turn === 'black') ? 'white' : 'black';
 
-	// TODO: This section seems it could be more DRY
+	// Track if valid move has been made, and thus, the turn taken
+	var turnTaken = false;
+
+	// TODO: Refactor this mess below. Could be more DRY
+
 	// Search Up
 	// If space above has a piece of the opponent's color
 	if (board.spaces[move.x][move.y - 1] === targetToken) {
 		// Look up each space until the top of the board for one of my pieces
 		for (var space = move.y - 2; space >= 0; space--) {
-			// If my piece is found return true; there's at least 1 legal move
+			// If my piece is found, begin flipping previous pieces
 			if (board.spaces[move.x][space] === myToken) {
-				return true;
+				//console.log("On " + turn + "'s turn, found legal spaces above");
+				while (++space <= move.y) {
+					//console.log("flipping " + move.x + ", " + space + " from " + board.spaces[move.x][space] + " to " + myToken);
+					board.spaces[move.x][space] = this.color;
+				}
+				// Set turn taken to true, and end for loop
+				turnTaken = true;
+				break;
+			}
+			// TODO: move else if conditional into the for loop conditional
+			// If an empty space is found, direction is invalid; end search
+			else if (board.spaces[move.x][space] === undefined) {
+				break;
 			}
 		}
 	}
@@ -132,9 +155,22 @@ Player.prototype.isALegalMove = function(move) {
 	if (board.spaces[move.x][move.y + 1] === targetToken) {
 		// Check each space until the bottom of the board for one of my pieces
 		for (var space = move.y + 2; space < board.rows; space++) {
-			// If my piece is found return true; there's at least 1 legal move
+			// If my piece is found, begin flipping previous pieces
 			if (board.spaces[move.x][space] === myToken) {
-				return true;
+				//console.log("On " + turn + "'s turn, found legal spaces below");
+				while (space >= move.y) {
+					//console.log("flipping " + move.x + ", " + space + " from " + board.spaces[move.x][space] + " to " + myToken);
+					board.spaces[move.x][space] = this.color;
+					space--;
+				}
+				// Set turn taken to true, and end for loop
+				turnTaken = true;
+				if (turnTaken) { break; }
+			}
+			// TODO: move else if conditional into the for loop conditional
+			// If an empty space is found, direction is invalid; end search
+			else if (board.spaces[move.x][space] === undefined) {
+				break;
 			}
 		}
 	}
@@ -146,9 +182,22 @@ Player.prototype.isALegalMove = function(move) {
 		if (board.spaces[move.x - 1][move.y] === targetToken) {
 			// Check each space until the left of the board for one of my pieces
 			for (var space = move.x - 2; space >= 0; space--) {
-				// If my piece is found return true; there's at least 1 legal move
+				// If my piece is found, begin flipping previous pieces
 				if (board.spaces[space][move.y] === myToken) {
-					return true;
+					//console.log("On " + turn + "'s turn, found legal spaces to the left");
+					while (space <= move.x) {
+						//console.log("flipping " + space + ", " + move.y + " from " + board.spaces[space][move.y] + " to " + myToken);
+						board.spaces[space][move.y] = this.color;
+						space++;
+					}
+					// Set turn taken to true, and end for loop
+					turnTaken = true;
+					if (turnTaken) { break; }
+				}
+				// TODO: move else if conditional into the for loop conditional
+				// If an empty space is found, direction is invalid; end search
+				else if (board.spaces[space][move.y] === undefined) {
+					break;
 				}
 			}
 		}
@@ -161,9 +210,22 @@ Player.prototype.isALegalMove = function(move) {
 		if (board.spaces[move.x + 1][move.y] === targetToken) {
 			// Check each space until the right of the board for one of my pieces
 			for (var space = move.x + 2; space < board.cols; space++) {
-				// If my piece is found return true; there's at least 1 legal move
+				// If my piece is found, begin flipping previous pieces
 				if (board.spaces[space][move.y] === myToken) {
-					return true;
+					//console.log("On " + turn + "'s turn, found legal spaces to the right");
+					while (space >= move.x) {
+						//console.log("flipping " + space + ", " + move.y + " from " + board.spaces[space][move.y] + " to " + myToken);
+						board.spaces[space][move.y] = this.color;
+						space--;
+					}
+					// Set turn taken to true, and end for loop
+					turnTaken = true;
+					if (turnTaken) { break; }
+				}
+				// TODO: move else if conditional into the for loop conditional
+				// If an empty space is found, direction is invalid; end search
+				else if (board.spaces[space][move.y] === undefined) {
+					break;
 				}
 			}
 		}
@@ -175,14 +237,26 @@ Player.prototype.isALegalMove = function(move) {
 		// If space up and left has a piece of the opponent's color
 		if (board.spaces[move.x - 1][move.y - 1] === targetToken) {
 			// Check for my piece until the top left space of the board
-			var delta = 2;
-			while (move.x - delta >= 0 && move.y - delta >= 0) {
-				// If my piece is found return true; there's at least 1 legal move
+			for (var delta = 2;
+				move.x - delta >= 0 && move.y - delta >= 0;
+				delta++) {
+				// If my piece is found, begin flipping previous pieces
 				if (board.spaces[move.x - delta][move.y - delta] === myToken) {
-					return true;
+					//console.log("On " + turn + "'s turn, found legal spaces up-left");
+					while (--delta >= 0) {
+						//console.log("flipping " + (move.x - delta) + ", " + (move.y - delta) + " from " + board.spaces[move.x - delta][move.y - delta] + " to " + myToken);
+						board.spaces[move.x - delta][move.y - delta] = this.color;
+					}
+					// Set turn taken to true, and end for loop
+					turnTaken = true;
+					if (turnTaken) { break; }
 				}
-				delta++;
-			}
+				// TODO: move else if conditional into the above loop conditional
+				// If an empty space is found, direction is invalid; end search
+				else if (board.spaces[move.x - delta][move.y - delta] === undefined) {
+					break;
+				}
+			} // End for loop
 		}
 	}
 
@@ -194,9 +268,22 @@ Player.prototype.isALegalMove = function(move) {
 			// Check for my piece until the bottom right space of the board
 			var delta = 2;
 			while (move.x + delta < board.cols && move.y + delta < board.rows) {
-				// If my piece is found return true; there's at least 1 legal move
+				// If my piece is found, begin flipping previous pieces
 				if (board.spaces[move.x + delta][move.y + delta] === myToken) {
-					return true;
+					//console.log("On " + turn + "'s turn, found legal spaces down-right");
+					while (delta >= 0) {
+						//console.log("flipping " + (move.x + delta) + ", " + (move.y + delta) + " from " + board.spaces[move.x + delta][move.y + delta] + " to " + myToken);
+						board.spaces[move.x + delta][move.y + delta] = this.color;
+						delta--;
+					}
+					// Set turn taken to true, and end while loop
+					turnTaken = true;
+					if (turnTaken) { break; }
+				}
+				// TODO: move else if conditional into the above loop conditional
+				// If an empty space is found, direction is invalid; end search
+				else if (board.spaces[move.x + delta][move.y + delta] === undefined) {
+					break;
 				}
 				delta++;
 			}
@@ -211,9 +298,22 @@ Player.prototype.isALegalMove = function(move) {
 			// Check for my piece until the bottom left space of the board
 			var delta = 2;
 			while (move.x - delta >= 0 && move.y + delta < board.rows) {
-				// If my piece is found return true; there's at least 1 legal move
+				// If my piece is found, begin flipping previous pieces
 				if (board.spaces[move.x - delta][move.y + delta] === myToken) {
-					return true;
+					//console.log("On " + turn + "'s turn, found legal spaces down-left");
+					while (delta >= 0) {
+						//console.log("flipping " + (move.x - delta) + ", " + (move.y + delta) + " from " + board.spaces[move.x - delta][move.y + delta] + " to " + myToken);
+						board.spaces[move.x - delta][move.y + delta] = this.color;
+						delta--;
+					}
+					// Set turn taken to true, and end while loop
+					turnTaken = true;
+					if (turnTaken) { break; }
+				}
+				// TODO: move else if conditional into the above loop conditional
+				// If an empty space is found, direction is invalid; end search
+				else if (board.spaces[move.x - delta][move.y + delta] === undefined) {
+					break;
 				}
 				delta++;
 			}
@@ -228,17 +328,30 @@ Player.prototype.isALegalMove = function(move) {
 			// Check for my piece until the top right space of the board
 			var delta = 2;
 			while (move.x + delta < board.cols && move.y - delta >= 0) {
-				// If my piece is found return true; there's at least 1 legal move
-				if (board.spaces[move.x + delta][move.y + delta] === myToken) {
-					return true;
+				// If my piece is found, begin flipping previous pieces
+				if (board.spaces[move.x + delta][move.y - delta] === myToken) {
+					//console.log("On " + turn + "'s turn, found legal spaces up-right");
+					while (delta >= 0) {
+						//console.log("flipping " + (move.x + delta) + ", " + (move.y - delta) + " from " + board.spaces[move.x + delta][move.y - delta] + " to " + myToken);
+						board.spaces[move.x + delta][move.y - delta] = this.color;
+						delta--;
+					}
+					// Set turn taken to true, and end while loop
+					turnTaken = true;
+					if (turnTaken) { break; }
+				}
+				// TODO: move else if conditional into the above loop conditional
+				// If an empty space is found, direction is invalid; end search
+				else if (board.spaces[move.x + delta][move.y - delta] === undefined) {
+					break;
 				}
 				delta++;
 			}
 		}
 	}
 
-	// If no legal move was found, return false
-	return false;
+	// If no legal move was found, this will return false
+	return turnTaken;
 };
 
 // Draw players pieces on the canvas
