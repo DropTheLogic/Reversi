@@ -128,7 +128,7 @@ var Engine = (function(global) {
      * render methods.
      */
     function updateEntities(dt) {
-        //score.update();
+        score.update();
         //allEnemies.forEach(function(enemy) {
         //    enemy.update(dt);
         //});
@@ -226,7 +226,7 @@ var Engine = (function(global) {
         }
 
         // Render Scoreboard
-        //score.render();
+        score.render();
 
         // Render player and enemies
         renderEntities();

@@ -13,14 +13,14 @@ var isReady = false; // Is user ready for a new game
 
 // Send these to the canvas variable in the Engine
 var CANVAS_WIDTH = 320;
-var CANVAS_HEIGHT = 320;
+var CANVAS_HEIGHT = 520;
 
 // Define gameboard for canvas
 var NUM_ROWS = 10;
 var NUM_COLS = 10;
 var space = {
-	'height' : CANVAS_HEIGHT / NUM_ROWS,
-	'width' : CANVAS_WIDTH / NUM_COLS
+	'height' : 32,
+	'width' : 32
 };
 
 // Playble gameboard
@@ -53,6 +53,7 @@ document.addEventListener("mouseup", function(event) {
 	};
 }, false);
 
+// Inititalize board matrix
 function initBoard() {
 	// Inititalize matrix size
 	for (var row = 0; row < board.rows; row++) {
@@ -64,6 +65,22 @@ function initBoard() {
 	board.spaces[4][4] = 'white';
 	board.spaces[3][4] = 'black';
 	board.spaces[4][3] = 'black';
+}
+
+// Tabulate score by simply adding all the pieces of each color on the board
+function addScore() {
+	player1.score = 0;
+	player2.score = 0;
+	for (var i = 0; i < board.rows; i++) {
+		for (var j = 0; j < board.cols; j++) {
+			if (board.spaces[i][j] === player1.color) {
+				player1.score++;
+			}
+			else if (board.spaces[i][j] === player2.color) {
+				player2.score++;
+			}
+		}
+	}
 }
 
 /**
@@ -79,7 +96,7 @@ var Player = function(name, color) {
 		'img' : 'images/checker.png',
 		'x' : (this.color === 'black') ? 0 : 32,
 		'y' : 32 };
-	this.pieces = [];
+	this.score = 2;
 }
 
 // Update player's pieces
@@ -108,8 +125,9 @@ Player.prototype.handleInput = function(move) {
 		if (turnTaken) {
 			moveRequest = {};
 			turn = (turn === 'white') ? 'black' : 'white';
-			console.log("************************");
-			console.log("Now it's " + turn + "'s turn!");
+
+			// Update player score
+			addScore();
 		}
 	}
 };
@@ -371,6 +389,55 @@ Player.prototype.render = function() {
 };
 
 /**
+ * Scoreboad Class, which will display scores and other UI information
+ * @constructor
+ */
+var Scoreboard = function() {
+
+};
+
+// Update scoreboard info
+Scoreboard.prototype.update = function() {
+
+};
+
+// Render Scoreboard
+Scoreboard.prototype.render = function() {
+    // Clear area of any pixel remnants
+    ctx.clearRect(0, 320, CANVAS_WIDTH, 200);
+
+    ctx.font = 'bold 20px Courier';
+    ctx.fillStyle = '#000'; // For black text
+
+    // Display who's turn it is
+    var messageString = "It's " + turn + "'s turn";
+    ctx.fillText(messageString, 64, 372);
+
+    // Render scores
+	this.printScore(player1, 32, 325);
+	this.printScore(player2, 200, 325);
+};
+
+/**
+ * Prints the score of one player, along with their piece sprite
+ * @param {object} player - The player who's score to print.
+ * @param {integer} xPos - x coordinated for the score to appear on the canvas
+ * @param {integer} yPos - y coordinated for the score to appear on the canvas
+ */
+Scoreboard.prototype.printScore = function(player, xPos, yPos) {
+    // Draw Player Chip Image
+    var sprite = Resources.get(player.sprite.img);
+    ctx.drawImage(sprite,
+		player.sprite.x, player.sprite.y,
+		space.width, space.height,
+		xPos, yPos,
+		space.width, space.height);
+    // Draw Player score
+    var scoreString = 'x ' + player.score;
+    ctx.fillText(scoreString, xPos + 40, (yPos + 25));
+};
+
+/**
  * Instantiate Players
  */
 var player1, player2;
@@ -392,5 +459,5 @@ function initGame() {
 	// Set turn to 0
 	turn = 'black';
     // Make the scoreboard
-    //score = new Scoreboard();
+    score = new Scoreboard();
 }
