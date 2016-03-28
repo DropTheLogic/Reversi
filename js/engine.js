@@ -132,8 +132,8 @@ var Engine = (function(global) {
         //allEnemies.forEach(function(enemy) {
         //    enemy.update(dt);
         //});
-        player1.update(dt);
-        player2.update(dt);
+        board.update(dt);
+        ghostBoard.update(dt);
         //stars.update(dt);
         //messages.update(dt);
     }
@@ -226,6 +226,7 @@ var Engine = (function(global) {
         }
 
         // Render Scoreboard
+        ctx.globalAlpha = 1;
         score.render();
 
         // Render player and enemies
@@ -247,8 +248,10 @@ var Engine = (function(global) {
         //    enemy.render();
         //});
 
-        player1.render();
-        player2.render();
+        board.render();
+        if (allowGhosts) {
+            ghostBoard.render();
+        }
         //stars.render();
     }
 
