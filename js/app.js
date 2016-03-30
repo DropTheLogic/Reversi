@@ -34,12 +34,12 @@ var mouseLoc = {};
 var allowGhosts = true;
 
 // Waits for mouse clicks and sends the info moveRequest variable
-document.addEventListener("mouseup", function(event) {
+document.addEventListener("mouseup", function (event) {
 	moveRequest = mouseLoc;
 }, false);
 
 // Watches mouse movements for ghost overlays
-document.addEventListener("mousemove", function(event) {
+document.addEventListener("mousemove", function (event) {
 	var x = event.x;
 	var y = event.y;
 
@@ -442,21 +442,6 @@ Player.prototype.update = function(dt) {
 
 // Account for user input
 Player.prototype.handleInput = function(move, board) {
-
-};
-
-// If given move request was successful, this method will flip game pieces
-//  and return true. Otherwise it returns false
-Player.prototype.takeTurn = function(move) {
-
-};
-
-// Draw players pieces on the canvas
-Player.prototype.render = function() {
-
-};
-
-Player.prototype.drawPieces = function(boardL) {
 
 };
 

@@ -129,12 +129,8 @@ var Engine = (function(global) {
      */
     function updateEntities(dt) {
         score.update();
-        //allEnemies.forEach(function(enemy) {
-        //    enemy.update(dt);
-        //});
         board.update(dt);
         ghostBoard.update(dt);
-        //stars.update(dt);
         //messages.update(dt);
     }
 
@@ -244,15 +240,10 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
-        //allEnemies.forEach(function(enemy) {
-        //    enemy.render();
-        //});
-
         board.render();
         if (allowGhosts) {
             ghostBoard.render();
         }
-        //stars.render();
     }
 
     /* This function does nothing but it could have been a good place to
