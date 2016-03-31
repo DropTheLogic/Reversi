@@ -172,8 +172,19 @@ Board.prototype.handleInput = function(move) {
 
 			// Check if any legal moves remain
 			if (!this.legalMoveAvailable()) {
-				console.log('Nothing left to play!');
-			}
+				// If not, see if turn can be skipped to the other player
+				turn = (turn === 'white') ? 'black' : 'white';
+				// If a legal move is found upon skipping turn, alert players
+				if (this.legalMoveAvailable()) {
+					console.log('Sorry ' +
+						((turn === 'white') ? 'black' : 'white') +
+						', gotta skip your turn!');
+				}
+				// If the skip provides no legal moves, the game is over
+				else {
+					console.log('Nothing left to play! Game over man!');
+				}
+            }
 		}
 	}
 };
