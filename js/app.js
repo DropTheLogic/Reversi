@@ -90,6 +90,7 @@ var Board = function(isAGhost) {
 	this.cols = 8;
 	this.spaces = new Array(this.rows);
 	this.isAGhost = isAGhost;
+    this.hasLegalMoves = true;
 };
 
 // Inititalize board matrix
@@ -106,7 +107,31 @@ Board.prototype.initBoard = function() {
 	this.spaces[4][3] = 'black';
 };
 
-// Update player's pieces within the board
+// Check the board for existence of legal move. Returns true if found.
+Board.prototype.legalMoveAvailable = function() {
+    // Cycle through spaces of board and check for legality
+    // Only look wt the main playing board
+    if (!this.isAGhost) {
+        for (var i = 0; i < this.cols; i++) {
+            for (var j = 0; j < this.rows; j++) {
+                // Make sure space isn't already occupied
+                if (this.spaces[i][j] === undefined) {
+                    // Check all directions from that space for a valid move
+                    this.takeTurn({x : i, y : j});
+                    // If valid move is found, return true
+                    if (this.hasLegalMoves) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    // If no valid moves were found, return false
+    return false;
+};
+
+// Update player's pieces within the board, when detected
 Board.prototype.update = function(dt) {
 	// For the ghost overlay matrix, input is handled on mousemove
 	if (this.isAGhost) {
@@ -144,6 +169,11 @@ Board.prototype.handleInput = function(move) {
 
 			// Update player score
 			addScore();
+
+			// Check if any legal moves remain
+			if (!this.legalMoveAvailable()) {
+				console.log('Nothing left to play!');
+			}
 		}
 	}
 };
@@ -158,6 +188,9 @@ Board.prototype.takeTurn = function(move) {
 	// Track if valid move has been made, and thus, the turn taken
 	var turnTaken = false;
 
+	// Track if legal move was found during this pass
+	this.hasLegalMoves = false;
+
 	// TODO: Refactor this mess below. Could be more DRY
 
 	// Search Up
@@ -167,14 +200,17 @@ Board.prototype.takeTurn = function(move) {
 		for (var space = move.y - 2; space >= 0; space--) {
 			// If my piece is found, begin flipping previous pieces
 			if (this.spaces[move.x][space] === turnToken) {
-				//console.log("On " + turn + "'s turn, found legal spaces above");
-				while (++space <= move.y) {
-					//console.log("flipping " + move.x + ", " + space + " from " + this.spaces[move.x][space] + " to " + turnToken);
-					this.spaces[move.x][space] = turnToken;
+				this.hasLegalMoves = true;
+				if (move === moveRequest || move === mouseLoc) {
+					//console.log("On " + turn + "'s turn, found legal spaces above");
+					while (++space <= move.y) {
+						//console.log("flipping " + move.x + ", " + space + " from " + this.spaces[move.x][space] + " to " + turnToken);
+						this.spaces[move.x][space] = turnToken;
+					}
+					// Set turn taken to true, and end for loop
+					turnTaken = true;
+					if (turnTaken) { break; }
 				}
-				// Set turn taken to true, and end for loop
-				turnTaken = true;
-				if (turnTaken) { break; }
 			}
 			// TODO: move else if conditional into the for loop conditional
 			// If an empty space is found, direction is invalid; end search
@@ -191,20 +227,23 @@ Board.prototype.takeTurn = function(move) {
 		for (var space = move.y + 2; space < board.rows; space++) {
 			// If my piece is found, begin flipping previous pieces
 			if (this.spaces[move.x][space] === turnToken) {
-				//console.log("On " + turn + "'s turn, found legal spaces below");
-				while (space >= move.y) {
-					//console.log("flipping " + move.x + ", " + space + " from " + this.spaces[move.x][space] + " to " + turnToken);
-					this.spaces[move.x][space] = turnToken;
-					space--;
+				this.hasLegalMoves = true;
+				if (move === moveRequest || move === mouseLoc) {
+					//console.log("On " + turn + "'s turn, found legal spaces below");
+					while (space >= move.y) {
+						//console.log("flipping " + move.x + ", " + space + " from " + this.spaces[move.x][space] + " to " + turnToken);
+						this.spaces[move.x][space] = turnToken;
+						space--;
+					}
+					// Set turn taken to true, and end for loop
+					turnTaken = true;
+					if (turnTaken) { break; }
 				}
-				// Set turn taken to true, and end for loop
-				turnTaken = true;
-				if (turnTaken) { break; }
-			}
-			// TODO: move else if conditional into the for loop conditional
-			// If an empty space is found, direction is invalid; end search
-			else if (this.spaces[move.x][space] === undefined) {
-				break;
+				// TODO: move else if conditional into the for loop conditional
+				// If an empty space is found, direction is invalid; end search
+				else if (this.spaces[move.x][space] === undefined) {
+					break;
+				}
 			}
 		}
 	}
@@ -218,15 +257,18 @@ Board.prototype.takeTurn = function(move) {
 			for (var space = move.x - 2; space >= 0; space--) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[space][move.y] === turnToken) {
-					//console.log("On " + turn + "'s turn, found legal spaces to the left");
-					while (space <= move.x) {
-						//console.log("flipping " + space + ", " + move.y + " from " + this.spaces[space][move.y] + " to " + turnToken);
-						this.spaces[space][move.y] = turnToken;
-						space++;
+					this.hasLegalMoves = true;
+					if (move === moveRequest || move === mouseLoc) {
+						//console.log("On " + turn + "'s turn, found legal spaces to the left");
+						while (space <= move.x) {
+							//console.log("flipping " + space + ", " + move.y + " from " + this.spaces[space][move.y] + " to " + turnToken);
+							this.spaces[space][move.y] = turnToken;
+							space++;
+						}
+						// Set turn taken to true, and end for loop
+						turnTaken = true;
+						if (turnTaken) { break; }
 					}
-					// Set turn taken to true, and end for loop
-					turnTaken = true;
-					if (turnTaken) { break; }
 				}
 				// TODO: move else if conditional into the for loop conditional
 				// If an empty space is found, direction is invalid; end search
@@ -246,15 +288,18 @@ Board.prototype.takeTurn = function(move) {
 			for (var space = move.x + 2; space < board.cols; space++) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[space][move.y] === turnToken) {
-					//console.log("On " + turn + "'s turn, found legal spaces to the right");
-					while (space >= move.x) {
-						//console.log("flipping " + space + ", " + move.y + " from " + this.spaces[space][move.y] + " to " + turnToken);
-						this.spaces[space][move.y] = turnToken;
-						space--;
+					this.hasLegalMoves = true;
+					if (move === moveRequest || move === mouseLoc) {
+						//console.log("On " + turn + "'s turn, found legal spaces to the right");
+						while (space >= move.x) {
+							//console.log("flipping " + space + ", " + move.y + " from " + this.spaces[space][move.y] + " to " + turnToken);
+							this.spaces[space][move.y] = turnToken;
+							space--;
+						}
+						// Set turn taken to true, and end for loop
+						turnTaken = true;
+						if (turnTaken) { break; }
 					}
-					// Set turn taken to true, and end for loop
-					turnTaken = true;
-					if (turnTaken) { break; }
 				}
 				// TODO: move else if conditional into the for loop conditional
 				// If an empty space is found, direction is invalid; end search
@@ -276,19 +321,22 @@ Board.prototype.takeTurn = function(move) {
 				delta++) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[move.x - delta][move.y - delta] === turnToken) {
-					//console.log("On " + turn + "'s turn, found legal spaces up-left");
-					while (--delta >= 0) {
-						//console.log("flipping " + (move.x - delta) + ", " + (move.y - delta) + " from " + this.spaces[move.x - delta][move.y - delta] + " to " + turnToken);
-						this.spaces[move.x - delta][move.y - delta] = turnToken;
+					this.hasLegalMoves = true;
+					if (move === moveRequest || move === mouseLoc) {
+						//console.log("On " + turn + "'s turn, found legal spaces up-left");
+						while (--delta >= 0) {
+							//console.log("flipping " + (move.x - delta) + ", " + (move.y - delta) + " from " + this.spaces[move.x - delta][move.y - delta] + " to " + turnToken);
+							this.spaces[move.x - delta][move.y - delta] = turnToken;
+						}
+						// Set turn taken to true, and end for loop
+						turnTaken = true;
+						if (turnTaken) { break; }
 					}
-					// Set turn taken to true, and end for loop
-					turnTaken = true;
-					if (turnTaken) { break; }
-				}
-				// TODO: move else if conditional into the above loop conditional
-				// If an empty space is found, direction is invalid; end search
-				else if (this.spaces[move.x - delta][move.y - delta] === undefined) {
-					break;
+					// TODO: move else if conditional into the above loop conditional
+					// If an empty space is found, direction is invalid; end search
+					else if (this.spaces[move.x - delta][move.y - delta] === undefined) {
+						break;
+					}
 				}
 			} // End for loop
 		}
@@ -304,23 +352,26 @@ Board.prototype.takeTurn = function(move) {
 			while (move.x + delta < board.cols && move.y + delta < board.rows) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[move.x + delta][move.y + delta] === turnToken) {
-					//console.log("On " + turn + "'s turn, found legal spaces down-right");
-					while (delta >= 0) {
-						//console.log("flipping " + (move.x + delta) + ", " + (move.y + delta) + " from " + this.spaces[move.x + delta][move.y + delta] + " to " + turnToken);
-						this.spaces[move.x + delta][move.y + delta] = turnToken;
-						delta--;
+					this.hasLegalMoves = true;
+					if (move === moveRequest || move === mouseLoc) {
+						//console.log("On " + turn + "'s turn, found legal spaces down-right");
+						while (delta >= 0) {
+							//console.log("flipping " + (move.x + delta) + ", " + (move.y + delta) + " from " + this.spaces[move.x + delta][move.y + delta] + " to " + turnToken);
+							this.spaces[move.x + delta][move.y + delta] = turnToken;
+							delta--;
+						}
+						// Set turn taken to true, and end while loop
+						turnTaken = true;
+						if (turnTaken) { break; }
 					}
-					// Set turn taken to true, and end while loop
-					turnTaken = true;
-					if (turnTaken) { break; }
-				}
-				// TODO: move else if conditional into the above loop conditional
-				// If an empty space is found, direction is invalid; end search
-				else if (this.spaces[move.x + delta][move.y + delta] === undefined) {
-					break;
-				}
-				delta++;
-			}
+					// TODO: move else if conditional into the above loop conditional
+					// If an empty space is found, direction is invalid; end search
+					else if (this.spaces[move.x + delta][move.y + delta] === undefined) {
+						break;
+					}
+				} // Close move found if loop
+                delta++;
+			} // Close While loop
 		}
 	}
 
@@ -334,21 +385,24 @@ Board.prototype.takeTurn = function(move) {
 			while (move.x - delta >= 0 && move.y + delta < board.rows) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[move.x - delta][move.y + delta] === turnToken) {
-					//console.log("On " + turn + "'s turn, found legal spaces down-left");
-					while (delta >= 0) {
-						//console.log("flipping " + (move.x - delta) + ", " + (move.y + delta) + " from " + this.spaces[move.x - delta][move.y + delta] + " to " + turnToken);
-						this.spaces[move.x - delta][move.y + delta] = turnToken;
-						delta--;
-					}
-					// Set turn taken to true, and end while loop
-					turnTaken = true;
-					if (turnTaken) { break; }
-				}
-				// TODO: move else if conditional into the above loop conditional
-				// If an empty space is found, direction is invalid; end search
-				else if (this.spaces[move.x - delta][move.y + delta] === undefined) {
-					break;
-				}
+                    this.hasLegalMoves = true;
+                    if (move === moveRequest || move === mouseLoc) {
+					   //console.log("On " + turn + "'s turn, found legal spaces down-left");
+					   while (delta >= 0) {
+                           //console.log("flipping " + (move.x - delta) + ", " + (move.y + delta) + " from " + this.spaces[move.x - delta][move.y + delta] + " to " + turnToken);
+                           this.spaces[move.x - delta][move.y + delta] = turnToken;
+                           delta--;
+					   }
+					   // Set turn taken to true, and end while loop
+					   turnTaken = true;
+					   if (turnTaken) { break; }
+				    }
+				    // TODO: move else if conditional into the above loop conditional
+				    // If an empty space is found, direction is invalid; end search
+				    else if (this.spaces[move.x - delta][move.y + delta] === undefined) {
+					   break;
+				    }
+                }
 				delta++;
 			}
 		}
@@ -364,21 +418,24 @@ Board.prototype.takeTurn = function(move) {
 			while (move.x + delta < board.cols && move.y - delta >= 0) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[move.x + delta][move.y - delta] === turnToken) {
-					//console.log("On " + turn + "'s turn, found legal spaces up-right");
-					while (delta >= 0) {
-						//console.log("flipping " + (move.x + delta) + ", " + (move.y - delta) + " from " + this.spaces[move.x + delta][move.y - delta] + " to " + turnToken);
-						this.spaces[move.x + delta][move.y - delta] = turnToken;
-						delta--;
-					}
-					// Set turn taken to true, and end while loop
-					turnTaken = true;
-					if (turnTaken) { break; }
-				}
-				// TODO: move else if conditional into the above loop conditional
-				// If an empty space is found, direction is invalid; end search
-				else if (this.spaces[move.x + delta][move.y - delta] === undefined) {
-					break;
-				}
+                    this.hasLegalMoves = true;
+                    if (move === moveRequest || move === mouseLoc) {
+					   //console.log("On " + turn + "'s turn, found legal spaces up-right");
+					   while (delta >= 0) {
+                           //console.log("flipping " + (move.x + delta) + ", " + (move.y - delta) + " from " + this.spaces[move.x + delta][move.y - delta] + " to " + turnToken);
+                           this.spaces[move.x + delta][move.y - delta] = turnToken;
+                           delta--;
+					   }
+					   // Set turn taken to true, and end while loop
+					   turnTaken = true;
+					   if (turnTaken) { break; }
+				    }
+				    // TODO: move else if conditional into the above loop conditional
+				    // If an empty space is found, direction is invalid; end search
+				    else if (this.spaces[move.x + delta][move.y - delta] === undefined) {
+					   break;
+				    }
+                }
 				delta++;
 			}
 		}
