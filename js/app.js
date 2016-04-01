@@ -10,6 +10,11 @@
  */
 var isGameOver = false;
 var isReady = false; // Is user ready for a new game
+var alert = {
+	'string' : "Let's Play Reversi!",
+	'yPos' : 405,
+	'seconds' : 2
+};
 
 // Send these to the canvas variable in the Engine
 var CANVAS_WIDTH = 320;
@@ -176,13 +181,23 @@ Board.prototype.handleInput = function(move) {
 				turn = (turn === 'white') ? 'black' : 'white';
 				// If a legal move is found upon skipping turn, alert players
 				if (this.legalMoveAvailable()) {
-					console.log('Sorry ' +
-						((turn === 'white') ? 'black' : 'white') +
-						', gotta skip your turn!');
+					alert = {
+						'string' : 'Skipping' +
+							((turn === 'white') ? 'black' : 'white') +
+							"'s turn!",
+						'yPos' : 400,
+						'seconds' : 3
+					};
 				}
 				// If the skip provides no legal moves, the game is over
 				else {
-					console.log('Nothing left to play! Game over man!');
+					var winner = (player1.score > player2.score) ?
+						player1.color : player2.color;
+					alert = {
+						'string' : 'Game over, ' + winner + ' wins!',
+						'yPos' : 400,
+						'seconds' : 3
+					};
 				}
             }
 		}
@@ -522,8 +537,17 @@ var Scoreboard = function() {
 };
 
 // Update scoreboard info
-Scoreboard.prototype.update = function() {
-
+Scoreboard.prototype.update = function(dt) {
+	// Check if there's a message to display
+	if (alert.seconds > 0) {
+		// Count down timer for visabilty
+		alert.seconds -= (1 * dt);
+		// Check if timer is up
+		if (alert.seconds <= 0) {
+			// Reset alert
+			alert.seconds = 0;
+		}
+	}
 };
 
 // Render Scoreboard
@@ -541,6 +565,11 @@ Scoreboard.prototype.render = function() {
     // Render scores
 	this.printScore(player1, 32, 325);
 	this.printScore(player2, 200, 325);
+
+	// Print messages, if any
+	if (alert.seconds > 0) {
+		this.printAlert(alert);
+	}
 };
 
 /**
@@ -560,6 +589,21 @@ Scoreboard.prototype.printScore = function(player, xPos, yPos) {
     // Draw Player score
     var scoreString = 'x ' + player.score;
     ctx.fillText(scoreString, xPos + 40, (yPos + 25));
+};
+
+/**
+ * Prints Alert message (usually at bottom of scoreboard)
+ * @param {object} message - Message to display. Message object must have
+ * the following properties: 'string', 'yPos', and 'seconds'. 'string' is
+ * the actual message string, 'yPos' is where, in pixels, to display the
+ * message, and 'seconds' is how long the message is to be displayed.
+ */
+Scoreboard.prototype.printAlert = function(message) {
+	ctx.font = 'bold 20px Courier';
+	ctx.fillStyle = '#000'; // For black text
+	// Find message length and use to center alert
+	var x = CANVAS_WIDTH / 2 - (message.string.length * 11 / 2);
+	ctx.fillText(message.string, x, message.yPos);
 };
 
 /**

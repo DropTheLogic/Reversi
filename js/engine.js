@@ -128,7 +128,7 @@ var Engine = (function(global) {
      * render methods.
      */
     function updateEntities(dt) {
-        score.update();
+        score.update(dt);
         board.update(dt);
         ghostBoard.update(dt);
         //messages.update(dt);
