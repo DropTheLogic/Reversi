@@ -37,9 +37,18 @@ var mouseLoc = {};
 
 // Allows visable pieces previewing move
 var allowGhosts = true;
+// Size and placement of on/off toggle
+var ghostOnX = space.width * 7;
+var ghostOnY = space.height * 13;
+var ghostOffX = ghostOnX + space.width;
+var ghostOffY = space.height * 13;
+var ghostW = space.width;
+var ghostH = space.height;
+var userClick = false;
 
 // Waits for mouse clicks and sends the info moveRequest variable
 document.addEventListener("mouseup", function (event) {
+	userClick = true;
 	moveRequest = mouseLoc;
 }, false);
 
@@ -154,6 +163,23 @@ Board.prototype.update = function(dt) {
 
 // Account for user input on the board
 Board.prototype.handleInput = function(move) {
+	// Check if user is clicking an option
+	// Chexk if user requests ghost moves on
+	if (move.x >= 6 &&
+		move.x < 7 &&
+		move.y >= 12 &&
+		move.y < 13 && userClick) {
+		allowGhosts = true;
+	}
+
+	// Chexk if user requests ghost moves off
+	if (move.x >= 7 &&
+		move.x < 8 &&
+		move.y >= 12 &&
+		move.y < 13 && userClick) {
+		allowGhosts = false;
+	}
+
 	// Check if move is in bounds and not already taken
 	if (move.x < this.cols &&
 		move.x >= 0 &&
@@ -201,6 +227,7 @@ Board.prototype.handleInput = function(move) {
 				}
             }
 		}
+		userClick = false;
 	}
 };
 
@@ -570,6 +597,9 @@ Scoreboard.prototype.render = function() {
 	if (alert.seconds > 0) {
 		this.printAlert(alert);
 	}
+
+	// Show ghost moves option
+	this.showGhostToggle();
 };
 
 /**
@@ -604,6 +634,30 @@ Scoreboard.prototype.printAlert = function(message) {
 	// Find message length and use to center alert
 	var x = CANVAS_WIDTH / 2 - (message.string.length * 11 / 2);
 	ctx.fillText(message.string, x, message.yPos);
+};
+
+Scoreboard.prototype.showGhostToggle = function() {
+	var highlight = '#eee';
+	var darken = '#444';
+
+	ctx.font = 'bold 12px Courier';
+	ctx.fillStyle = '#000'; // For black text
+	ctx.fillText('Ghost Moves: ', 130, ghostOnY + 20);
+
+	// Toggle Box
+	ctx.fillStyle = (allowGhosts) ? highlight : darken;
+	ctx.fillRect(ghostOnX, ghostOnY, ghostW, ghostH);
+	ctx.fillStyle = (allowGhosts) ? darken : highlight;
+	ctx.fillRect(ghostOffX, ghostOffY, ghostW, ghostH);
+
+	// Button Text
+	ctx.fillStyle = '#000';
+	ctx.fillText('On', ghostOnX + 10, ghostOnY + 20);
+	ctx.fillText('Off', ghostOffX + 8, ghostOnY + 20);
+
+	// Button Border
+	ctx.strokeStyle = '#000';
+	ctx.strokeRect(ghostOnX, ghostOnY, space.width * 2, space.height);
 };
 
 /**
