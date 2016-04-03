@@ -179,6 +179,7 @@ Board.prototype.handleInput = function(move) {
 		move.y < 13 && userClick) {
 		allowGhosts = false;
 	}
+	userClick = false;
 
 	// Check if move is in bounds and not already taken
 	if (move.x < this.cols &&
@@ -227,7 +228,6 @@ Board.prototype.handleInput = function(move) {
 				}
             }
 		}
-		userClick = false;
 	}
 };
 
