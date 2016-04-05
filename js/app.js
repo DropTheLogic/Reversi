@@ -172,13 +172,24 @@ Board.prototype.handleInput = function(move) {
 		allowGhosts = true;
 	}
 
-	// Chexk if user requests ghost moves off
+	// Check if user requests ghost moves off
 	if (move.x >= 7 &&
 		move.x < 8 &&
 		move.y >= 12 &&
 		move.y < 13 && userClick) {
 		allowGhosts = false;
 	}
+
+	// Check if user wants to reset game
+	if (move.x >= 1 &&
+		move.x <= 2 &&
+		move.y === 12 && userClick) {
+		var reset = confirm('End current game and start a new one?');
+		if (reset) {
+			initGame();
+		}
+	}
+
 	userClick = false;
 
 	// Check if move is in bounds and not already taken
@@ -600,6 +611,9 @@ Scoreboard.prototype.render = function() {
 
 	// Show ghost moves option
 	this.showGhostToggle();
+
+	// Print reset button
+	this.printReset();
 };
 
 /**
@@ -642,22 +656,23 @@ Scoreboard.prototype.showGhostToggle = function() {
 
 	ctx.font = 'bold 12px Courier';
 	ctx.fillStyle = '#000'; // For black text
-	ctx.fillText('Ghost Moves: ', 130, ghostOnY + 20);
+	ctx.fillText('Ghost Moves', 216, ghostOnY + 38);
 
-	// Toggle Box
-	ctx.fillStyle = (allowGhosts) ? highlight : darken;
-	ctx.fillRect(ghostOnX, ghostOnY, ghostW, ghostH);
-	ctx.fillStyle = (allowGhosts) ? darken : highlight;
-	ctx.fillRect(ghostOffX, ghostOffY, ghostW, ghostH);
+	// Display toggle sprite from sprite sheet
+	var toggleSprite = Resources.get('images/switch.png');
+	// Select position of appropriate sprite from sheet
+	var onY = (allowGhosts) ? 0 : 70;
+	ctx.drawImage(toggleSprite, 0, onY, 128, 64, ghostOnX, ghostOnY, 64, 32);
+};
 
-	// Button Text
-	ctx.fillStyle = '#000';
-	ctx.fillText('On', ghostOnX + 10, ghostOnY + 20);
-	ctx.fillText('Off', ghostOffX + 8, ghostOnY + 20);
-
-	// Button Border
-	ctx.strokeStyle = '#000';
-	ctx.strokeRect(ghostOnX, ghostOnY, space.width * 2, space.height);
+Scoreboard.prototype.printReset = function() {
+	// Display label
+	ctx.font = 'bold 12px Courier';
+	ctx.fillStyle = '#000'; // For black text
+	ctx.fillText('Reset Game', 60, ghostOnY + 38);
+	// Display button
+	var buttonSprite = Resources.get('images/button.png');
+	ctx.drawImage(buttonSprite, space.width * 2, ghostOnY, 64, 26);
 };
 
 /**
