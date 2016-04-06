@@ -164,7 +164,7 @@ Board.prototype.update = function(dt) {
 // Account for user input on the board
 Board.prototype.handleInput = function(move) {
 	// Check if user is clicking an option
-	// Chexk if user requests ghost moves on
+	// Check if user requests ghost moves on
 	if (move.x >= 6 &&
 		move.x < 7 &&
 		move.y >= 12 &&
