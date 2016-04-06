@@ -46,6 +46,16 @@ var ghostW = space.width;
 var ghostH = space.height;
 var userClick = false;
 
+// Last move, 2D Array holding game board space ownership
+var lastMove = [8];
+for (var row = 0; row < 8; row++) {
+	lastMove[row] = new Array(8);
+}
+lastMove[3][3] = 'white';
+lastMove[4][4] = 'white';
+lastMove[3][4] = 'black';
+lastMove[4][3] = 'black';
+
 // Waits for mouse clicks and sends the info moveRequest variable
 document.addEventListener("mouseup", function (event) {
 	userClick = true;
@@ -181,12 +191,28 @@ Board.prototype.handleInput = function(move) {
 	}
 
 	// Check if user wants to reset game
-	if (move.x >= 1 &&
-		move.x <= 2 &&
+	if (move.x >= 0 &&
+		move.x <= 1 &&
 		move.y === 12 && userClick) {
 		var reset = confirm('End current game and start a new one?');
 		if (reset) {
 			initGame();
+		}
+	}
+
+	// Check if user wants to undo move
+	if (move.x >= 3 &&
+		move.x <= 4 &&
+		move.y === 12 && userClick) {
+		var undo = confirm('Undo last move?');
+		if (undo) {
+			copyArray(lastMove, board.spaces);
+			for (var i = 0; i < lastMove.length; i++) {
+				for (var j = 0; j < lastMove[i].length; j++) {
+					console.log("boardSpaces[i][j] updated to " + board.spaces[j][i]);
+				}
+			}
+			//turn = (turn === 'white') ? 'black' : 'white';
 		}
 	}
 
@@ -264,6 +290,12 @@ Board.prototype.takeTurn = function(move) {
 		for (var space = move.y - 2; space >= 0; space--) {
 			// If my piece is found, begin flipping previous pieces
 			if (this.spaces[move.x][space] === turnToken) {
+				// Imprint this board to lastMove before flipping
+				if (!this.isAGhost && !turnTaken) {
+					copyArray(this.spaces, lastMove);
+					console.log("Copied!");
+				}
+				// Flip
 				this.hasLegalMoves = true;
 				if (move === moveRequest || move === mouseLoc) {
 					//console.log("On " + turn + "'s turn, found legal spaces above");
@@ -291,6 +323,12 @@ Board.prototype.takeTurn = function(move) {
 		for (var space = move.y + 2; space < board.rows; space++) {
 			// If my piece is found, begin flipping previous pieces
 			if (this.spaces[move.x][space] === turnToken) {
+				// Imprint this board to lastMove before flipping
+				if (!this.isAGhost && !turnTaken) {
+					copyArray(this.spaces, lastMove);
+					console.log("Copied!");
+				}
+				// Flip
 				this.hasLegalMoves = true;
 				if (move === moveRequest || move === mouseLoc) {
 					//console.log("On " + turn + "'s turn, found legal spaces below");
@@ -321,6 +359,12 @@ Board.prototype.takeTurn = function(move) {
 			for (var space = move.x - 2; space >= 0; space--) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[space][move.y] === turnToken) {
+					// Imprint this board to lastMove before flipping
+					if (!this.isAGhost && !turnTaken) {
+						copyArray(this.spaces, lastMove);
+						console.log("Copied!");
+					}
+					// Flip
 					this.hasLegalMoves = true;
 					if (move === moveRequest || move === mouseLoc) {
 						//console.log("On " + turn + "'s turn, found legal spaces to the left");
@@ -352,6 +396,12 @@ Board.prototype.takeTurn = function(move) {
 			for (var space = move.x + 2; space < board.cols; space++) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[space][move.y] === turnToken) {
+					// Imprint this board to lastMove before flipping
+					if (!this.isAGhost && !turnTaken) {
+						copyArray(this.spaces, lastMove);
+						console.log("Copied!");
+					}
+					// Flip
 					this.hasLegalMoves = true;
 					if (move === moveRequest || move === mouseLoc) {
 						//console.log("On " + turn + "'s turn, found legal spaces to the right");
@@ -385,6 +435,12 @@ Board.prototype.takeTurn = function(move) {
 				delta++) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[move.x - delta][move.y - delta] === turnToken) {
+					// Imprint this board to lastMove before flipping
+					if (!this.isAGhost && !turnTaken) {
+						copyArray(this.spaces, lastMove);
+						console.log("Copied!");
+					}
+					// Flip
 					this.hasLegalMoves = true;
 					if (move === moveRequest || move === mouseLoc) {
 						//console.log("On " + turn + "'s turn, found legal spaces up-left");
@@ -416,6 +472,12 @@ Board.prototype.takeTurn = function(move) {
 			while (move.x + delta < board.cols && move.y + delta < board.rows) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[move.x + delta][move.y + delta] === turnToken) {
+					// Imprint this board to lastMove before flipping
+					if (!this.isAGhost && !turnTaken) {
+						console.log("Copied!");
+						copyArray(this.spaces, lastMove);
+					}
+					// Flip
 					this.hasLegalMoves = true;
 					if (move === moveRequest || move === mouseLoc) {
 						//console.log("On " + turn + "'s turn, found legal spaces down-right");
@@ -449,6 +511,12 @@ Board.prototype.takeTurn = function(move) {
 			while (move.x - delta >= 0 && move.y + delta < board.rows) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[move.x - delta][move.y + delta] === turnToken) {
+					// Imprint this board to lastMove before flipping
+					if (!this.isAGhost && !turnTaken) {
+						console.log("Copied!");
+						copyArray(this.spaces, lastMove);
+					}
+					// Flip
                     this.hasLegalMoves = true;
                     if (move === moveRequest || move === mouseLoc) {
 					   //console.log("On " + turn + "'s turn, found legal spaces down-left");
@@ -482,6 +550,12 @@ Board.prototype.takeTurn = function(move) {
 			while (move.x + delta < board.cols && move.y - delta >= 0) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[move.x + delta][move.y - delta] === turnToken) {
+					// Imprint this board to lastMove before flipping
+					if (!this.isAGhost && !turnTaken) {
+						console.log("Copied!");
+						copyArray(this.spaces, lastMove);
+					}
+					// Flip
                     this.hasLegalMoves = true;
                     if (move === moveRequest || move === mouseLoc) {
 					   //console.log("On " + turn + "'s turn, found legal spaces up-right");
@@ -613,7 +687,10 @@ Scoreboard.prototype.render = function() {
 	this.showGhostToggle();
 
 	// Print reset button
-	this.printReset();
+	this.printButton('Reset Game', 1);
+
+	// Print undo button
+	this.printButton('Undo', 4);
 };
 
 /**
@@ -650,10 +727,8 @@ Scoreboard.prototype.printAlert = function(message) {
 	ctx.fillText(message.string, x, message.yPos);
 };
 
+// Prints ghost moves toggle button
 Scoreboard.prototype.showGhostToggle = function() {
-	var highlight = '#eee';
-	var darken = '#444';
-
 	ctx.font = 'bold 12px Courier';
 	ctx.fillStyle = '#000'; // For black text
 	ctx.fillText('Ghost Moves', 216, ghostOnY + 38);
@@ -665,14 +740,22 @@ Scoreboard.prototype.showGhostToggle = function() {
 	ctx.drawImage(toggleSprite, 0, onY, 128, 64, ghostOnX, ghostOnY, 64, 32);
 };
 
-Scoreboard.prototype.printReset = function() {
+/**
+ * Prints Button with a label describing what it does
+ * @param {string} label - the text to display under button
+ * @param {integer} xPosSpace - an integer corresponding to the space on the
+ * board underwhich to left-align the button
+ */
+Scoreboard.prototype.printButton = function(label, xPosSpace) {
 	// Display label
 	ctx.font = 'bold 12px Courier';
 	ctx.fillStyle = '#000'; // For black text
-	ctx.fillText('Reset Game', 60, ghostOnY + 38);
+	// Center text under button by finding length of string
+	var x = (space.width * xPosSpace + 32) - (label.length * 7.5 / 2);
+	ctx.fillText(label, x, ghostOnY + 38);
 	// Display button
 	var buttonSprite = Resources.get('images/button.png');
-	ctx.drawImage(buttonSprite, space.width * 2, ghostOnY, 64, 26);
+	ctx.drawImage(buttonSprite, space.width * xPosSpace, ghostOnY, 64, 26);
 };
 
 /**
