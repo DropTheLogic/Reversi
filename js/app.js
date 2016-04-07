@@ -46,19 +46,27 @@ var ghostW = space.width;
 var ghostH = space.height;
 var userClick = false;
 
-// Last move, 2D Array holding game board space ownership
+// Last move, 2D Array holding game board space ownership and temp, ditto
 var lastMove = [8];
-for (var row = 0; row < 8; row++) {
-	lastMove[row] = new Array(8);
+var tempArr = [8];
+
+function init2DArray(a) {
+	for (var row = 0; row < 8; row++) {
+		a[row] = new Array(8);
+	}
+	a[3][3] = 'white';
+	a[4][4] = 'white';
+	a[3][4] = 'black';
+	a[4][3] = 'black';
 }
-lastMove[3][3] = 'white';
-lastMove[4][4] = 'white';
-lastMove[3][4] = 'black';
-lastMove[4][3] = 'black';
+
 
 // Waits for mouse clicks and sends the info moveRequest variable
 document.addEventListener("mouseup", function (event) {
 	userClick = true;
+	if (!arraysHaveEqualContents(ghostBoard.spaces, board.spaces)) {
+		copyArray(board.spaces, lastMove);
+	}
 	moveRequest = mouseLoc;
 }, false);
 
@@ -102,6 +110,39 @@ function copyArray(sourceArr, targetArr) {
 			targetArr[i][j] = sourceArr[i][j];
 		}
 	}
+}
+
+// Compares 2D array, returns true if they have equal contents
+function arraysHaveEqualContents(a1, a2) {
+	for (var i = 0; i < a1.length; i++) {
+		for (var j = 0; j < a1[i].length; j++) {
+			if (a1[i][j] != a2[i][j]) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+// Prints 2D array to console, for debugging
+function print2DArray(a) {
+	for (var i = 0; i < a.length; i++) {
+		var lineString = '';
+		for (var j = 0; j < a[i].length; j++) {
+			if (a[j][i] === 'black') {
+				lineString += '|B';
+			}
+			else if (a[j][i] === 'white') {
+				lineString += '|W';
+			}
+			else {
+				lineString += '| ';
+			}
+			if (j === (a.length - 1)) { lineString += "|" }
+		}
+		console.log(lineString + '\n_________________');
+	}
+	console.log('*******************************')
 }
 
 /**
@@ -204,15 +245,16 @@ Board.prototype.handleInput = function(move) {
 	if (move.x >= 3 &&
 		move.x <= 4 &&
 		move.y === 12 && userClick) {
-		var undo = confirm('Undo last move?');
-		if (undo) {
+		var undo = true; //confirm('Undo last move?');
+		// Make sure move isn't first move
+		if (undo && !arraysHaveEqualContents(this.spaces, lastMove)) {
+			// Copy current board matrix to temp
+			copyArray(board.spaces, tempArr);
+			// Copy last move to board
 			copyArray(lastMove, board.spaces);
-			for (var i = 0; i < lastMove.length; i++) {
-				for (var j = 0; j < lastMove[i].length; j++) {
-					console.log("boardSpaces[i][j] updated to " + board.spaces[j][i]);
-				}
-			}
-			//turn = (turn === 'white') ? 'black' : 'white';
+			// Copy temp (old current board) to last move
+			copyArray(tempArr, lastMove);
+			turn = (turn === 'white') ? 'black' : 'white';
 		}
 	}
 
@@ -290,12 +332,6 @@ Board.prototype.takeTurn = function(move) {
 		for (var space = move.y - 2; space >= 0; space--) {
 			// If my piece is found, begin flipping previous pieces
 			if (this.spaces[move.x][space] === turnToken) {
-				// Imprint this board to lastMove before flipping
-				if (!this.isAGhost && !turnTaken) {
-					copyArray(this.spaces, lastMove);
-					console.log("Copied!");
-				}
-				// Flip
 				this.hasLegalMoves = true;
 				if (move === moveRequest || move === mouseLoc) {
 					//console.log("On " + turn + "'s turn, found legal spaces above");
@@ -323,12 +359,6 @@ Board.prototype.takeTurn = function(move) {
 		for (var space = move.y + 2; space < board.rows; space++) {
 			// If my piece is found, begin flipping previous pieces
 			if (this.spaces[move.x][space] === turnToken) {
-				// Imprint this board to lastMove before flipping
-				if (!this.isAGhost && !turnTaken) {
-					copyArray(this.spaces, lastMove);
-					console.log("Copied!");
-				}
-				// Flip
 				this.hasLegalMoves = true;
 				if (move === moveRequest || move === mouseLoc) {
 					//console.log("On " + turn + "'s turn, found legal spaces below");
@@ -359,12 +389,6 @@ Board.prototype.takeTurn = function(move) {
 			for (var space = move.x - 2; space >= 0; space--) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[space][move.y] === turnToken) {
-					// Imprint this board to lastMove before flipping
-					if (!this.isAGhost && !turnTaken) {
-						copyArray(this.spaces, lastMove);
-						console.log("Copied!");
-					}
-					// Flip
 					this.hasLegalMoves = true;
 					if (move === moveRequest || move === mouseLoc) {
 						//console.log("On " + turn + "'s turn, found legal spaces to the left");
@@ -396,12 +420,6 @@ Board.prototype.takeTurn = function(move) {
 			for (var space = move.x + 2; space < board.cols; space++) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[space][move.y] === turnToken) {
-					// Imprint this board to lastMove before flipping
-					if (!this.isAGhost && !turnTaken) {
-						copyArray(this.spaces, lastMove);
-						console.log("Copied!");
-					}
-					// Flip
 					this.hasLegalMoves = true;
 					if (move === moveRequest || move === mouseLoc) {
 						//console.log("On " + turn + "'s turn, found legal spaces to the right");
@@ -435,12 +453,6 @@ Board.prototype.takeTurn = function(move) {
 				delta++) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[move.x - delta][move.y - delta] === turnToken) {
-					// Imprint this board to lastMove before flipping
-					if (!this.isAGhost && !turnTaken) {
-						copyArray(this.spaces, lastMove);
-						console.log("Copied!");
-					}
-					// Flip
 					this.hasLegalMoves = true;
 					if (move === moveRequest || move === mouseLoc) {
 						//console.log("On " + turn + "'s turn, found legal spaces up-left");
@@ -472,12 +484,6 @@ Board.prototype.takeTurn = function(move) {
 			while (move.x + delta < board.cols && move.y + delta < board.rows) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[move.x + delta][move.y + delta] === turnToken) {
-					// Imprint this board to lastMove before flipping
-					if (!this.isAGhost && !turnTaken) {
-						console.log("Copied!");
-						copyArray(this.spaces, lastMove);
-					}
-					// Flip
 					this.hasLegalMoves = true;
 					if (move === moveRequest || move === mouseLoc) {
 						//console.log("On " + turn + "'s turn, found legal spaces down-right");
@@ -511,12 +517,6 @@ Board.prototype.takeTurn = function(move) {
 			while (move.x - delta >= 0 && move.y + delta < board.rows) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[move.x - delta][move.y + delta] === turnToken) {
-					// Imprint this board to lastMove before flipping
-					if (!this.isAGhost && !turnTaken) {
-						console.log("Copied!");
-						copyArray(this.spaces, lastMove);
-					}
-					// Flip
                     this.hasLegalMoves = true;
                     if (move === moveRequest || move === mouseLoc) {
 					   //console.log("On " + turn + "'s turn, found legal spaces down-left");
@@ -550,12 +550,6 @@ Board.prototype.takeTurn = function(move) {
 			while (move.x + delta < board.cols && move.y - delta >= 0) {
 				// If my piece is found, begin flipping previous pieces
 				if (this.spaces[move.x + delta][move.y - delta] === turnToken) {
-					// Imprint this board to lastMove before flipping
-					if (!this.isAGhost && !turnTaken) {
-						console.log("Copied!");
-						copyArray(this.spaces, lastMove);
-					}
-					// Flip
                     this.hasLegalMoves = true;
                     if (move === moveRequest || move === mouseLoc) {
 					   //console.log("On " + turn + "'s turn, found legal spaces up-right");
@@ -778,6 +772,9 @@ function initGame() {
     // Initialize ghost board matrix
     ghostBoard = new Board(true);
     ghostBoard.initBoard();
+	//Initialize Undo matrices
+	init2DArray(lastMove);
+	init2DArray(tempArr);
     // Instantiate players
     player1 = new Player('Danny', 'black');
 	player2 = new Player('Lauren', 'white');
