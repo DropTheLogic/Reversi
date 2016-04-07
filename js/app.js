@@ -46,9 +46,27 @@ var ghostW = space.width;
 var ghostH = space.height;
 var userClick = false;
 
+// Last move, 2D Array holding game board space ownership and temp, ditto
+var lastMove = [8];
+var tempArr = [8];
+
+function init2DArray(a) {
+	for (var row = 0; row < 8; row++) {
+		a[row] = new Array(8);
+	}
+	a[3][3] = 'white';
+	a[4][4] = 'white';
+	a[3][4] = 'black';
+	a[4][3] = 'black';
+}
+
+
 // Waits for mouse clicks and sends the info moveRequest variable
 document.addEventListener("mouseup", function (event) {
 	userClick = true;
+	if (!arraysHaveEqualContents(ghostBoard.spaces, board.spaces)) {
+		copyArray(board.spaces, lastMove);
+	}
 	moveRequest = mouseLoc;
 }, false);
 
@@ -92,6 +110,39 @@ function copyArray(sourceArr, targetArr) {
 			targetArr[i][j] = sourceArr[i][j];
 		}
 	}
+}
+
+// Compares 2D array, returns true if they have equal contents
+function arraysHaveEqualContents(a1, a2) {
+	for (var i = 0; i < a1.length; i++) {
+		for (var j = 0; j < a1[i].length; j++) {
+			if (a1[i][j] != a2[i][j]) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+// Prints 2D array to console, for debugging
+function print2DArray(a) {
+	for (var i = 0; i < a.length; i++) {
+		var lineString = '';
+		for (var j = 0; j < a[i].length; j++) {
+			if (a[j][i] === 'black') {
+				lineString += '|B';
+			}
+			else if (a[j][i] === 'white') {
+				lineString += '|W';
+			}
+			else {
+				lineString += '| ';
+			}
+			if (j === (a.length - 1)) { lineString += "|" }
+		}
+		console.log(lineString + '\n_________________');
+	}
+	console.log('*******************************')
 }
 
 /**
@@ -181,12 +232,29 @@ Board.prototype.handleInput = function(move) {
 	}
 
 	// Check if user wants to reset game
-	if (move.x >= 1 &&
-		move.x <= 2 &&
+	if (move.x >= 0 &&
+		move.x <= 1 &&
 		move.y === 12 && userClick) {
 		var reset = confirm('End current game and start a new one?');
 		if (reset) {
 			initGame();
+		}
+	}
+
+	// Check if user wants to undo move
+	if (move.x >= 3 &&
+		move.x <= 4 &&
+		move.y === 12 && userClick) {
+		var undo = true; //confirm('Undo last move?');
+		// Make sure move isn't first move
+		if (undo && !arraysHaveEqualContents(this.spaces, lastMove)) {
+			// Copy current board matrix to temp
+			copyArray(board.spaces, tempArr);
+			// Copy last move to board
+			copyArray(lastMove, board.spaces);
+			// Copy temp (old current board) to last move
+			copyArray(tempArr, lastMove);
+			turn = (turn === 'white') ? 'black' : 'white';
 		}
 	}
 
@@ -613,7 +681,10 @@ Scoreboard.prototype.render = function() {
 	this.showGhostToggle();
 
 	// Print reset button
-	this.printReset();
+	this.printButton('Reset Game', 1);
+
+	// Print undo button
+	this.printButton('Undo', 4);
 };
 
 /**
@@ -650,10 +721,8 @@ Scoreboard.prototype.printAlert = function(message) {
 	ctx.fillText(message.string, x, message.yPos);
 };
 
+// Prints ghost moves toggle button
 Scoreboard.prototype.showGhostToggle = function() {
-	var highlight = '#eee';
-	var darken = '#444';
-
 	ctx.font = 'bold 12px Courier';
 	ctx.fillStyle = '#000'; // For black text
 	ctx.fillText('Ghost Moves', 216, ghostOnY + 38);
@@ -665,14 +734,22 @@ Scoreboard.prototype.showGhostToggle = function() {
 	ctx.drawImage(toggleSprite, 0, onY, 128, 64, ghostOnX, ghostOnY, 64, 32);
 };
 
-Scoreboard.prototype.printReset = function() {
+/**
+ * Prints Button with a label describing what it does
+ * @param {string} label - the text to display under button
+ * @param {integer} xPosSpace - an integer corresponding to the space on the
+ * board underwhich to left-align the button
+ */
+Scoreboard.prototype.printButton = function(label, xPosSpace) {
 	// Display label
 	ctx.font = 'bold 12px Courier';
 	ctx.fillStyle = '#000'; // For black text
-	ctx.fillText('Reset Game', 60, ghostOnY + 38);
+	// Center text under button by finding length of string
+	var x = (space.width * xPosSpace + 32) - (label.length * 7.5 / 2);
+	ctx.fillText(label, x, ghostOnY + 38);
 	// Display button
 	var buttonSprite = Resources.get('images/button.png');
-	ctx.drawImage(buttonSprite, space.width * 2, ghostOnY, 64, 26);
+	ctx.drawImage(buttonSprite, space.width * xPosSpace, ghostOnY, 64, 26);
 };
 
 /**
@@ -695,6 +772,9 @@ function initGame() {
     // Initialize ghost board matrix
     ghostBoard = new Board(true);
     ghostBoard.initBoard();
+	//Initialize Undo matrices
+	init2DArray(lastMove);
+	init2DArray(tempArr);
     // Instantiate players
     player1 = new Player('Danny', 'black');
 	player2 = new Player('Lauren', 'white');
