@@ -221,6 +221,30 @@ var Engine = (function(global) {
             }
         }
 
+        // Print scoreboard background
+        for (row = 0; row < numRows; row++) {
+        	for (col = 10; col < 16; col++) {
+        		// Find if row number is even
+                if (row % 2 === 0) {
+                    // and column number is even, put light space
+                    sprite = (col % 2 === 0) ?
+                        sheetB.spaceLightVert : sheetB.spaceLightHor;
+                }
+                // If row number is odd,
+                else {
+                    // If column number is even, put darker space
+                    sprite = (col % 2 === 0) ?
+                        sheetB.spaceLightHor : sheetB.spaceLightVert;
+                }
+        		ctx.drawImage(
+                    Resources.get(wood),
+                    sprite.x, sprite.y,
+                    space.height, space.width,
+                    row * space.height, col * space.width,
+                    space.height, space.width);
+        	}
+        }
+
         // Render Scoreboard
         ctx.globalAlpha = 1;
         score.render();
