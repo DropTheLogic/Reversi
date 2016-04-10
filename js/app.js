@@ -659,7 +659,7 @@ Scoreboard.prototype.update = function(dt) {
 // Render Scoreboard
 Scoreboard.prototype.render = function() {
     // Clear area of any pixel remnants
-    ctx.clearRect(0, 320, CANVAS_WIDTH, 200);
+    //ctx.clearRect(0, 320, CANVAS_WIDTH, 200);
 
     ctx.font = 'bold 20px Courier';
     ctx.fillStyle = '#000'; // For black text
