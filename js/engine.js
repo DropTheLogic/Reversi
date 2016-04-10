@@ -145,6 +145,7 @@ var Engine = (function(global) {
          * for that particular row of the game level.
          */
         var wood = 'images/wood.png',
+			woodOrig = 'images/woodOrig.png',
             numRows = 10,
             numCols = 10,
             row, col;
@@ -167,7 +168,9 @@ var Engine = (function(global) {
             'spaceGreenMH' : { 'x' : 192, 'y' : 32 },
             'spaceGreenMV' : { 'x' : 160, 'y' : 32 },
             'spaceGreenDH' : { 'x' : 192, 'y' : 64 },
-            'spaceGreenDV' : { 'x' : 160, 'y' : 64 }
+            'spaceGreenDV' : { 'x' : 160, 'y' : 64 },
+            'spaceGreenLH' : { 'x' : 192, 'y' : 0 },
+            'spaceGreenLV' : { 'x' : 160, 'y' : 0 }
         };
 
         /* Loop through the number of rows and columns we've defined above
@@ -228,16 +231,16 @@ var Engine = (function(global) {
                 if (row % 2 === 0) {
                     // and column number is even, put light space
                     sprite = (col % 2 === 0) ?
-                        sheetB.spaceLightVert : sheetB.spaceLightHor;
+                        sheetB.spaceGreenLH : sheetB.spaceGreenLV;
                 }
                 // If row number is odd,
                 else {
                     // If column number is even, put darker space
                     sprite = (col % 2 === 0) ?
-                        sheetB.spaceLightHor : sheetB.spaceLightVert;
+                        sheetB.spaceGreenLV : sheetB.spaceGreenLH;
                 }
         		ctx.drawImage(
-                    Resources.get(wood),
+                    Resources.get(woodOrig),
                     sprite.x, sprite.y,
                     space.height, space.width,
                     row * space.height, col * space.width,
@@ -309,7 +312,8 @@ var Engine = (function(global) {
 		'images/checker.png',
 		'images/wood.png',
 		'images/switch.png',
-		'images/button.png'
+		'images/button.png',
+		'images/woodOrig.png'
     ]);
     Resources.onReady(init);
 
