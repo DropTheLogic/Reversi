@@ -226,7 +226,7 @@ var Engine = (function(global) {
 
         // Print scoreboard background
         for (row = 0; row < numRows; row++) {
-        	for (col = 10; col < 16; col++) {
+			for (col = 10; col < 17; col++) {
         		// Find if row number is even
                 if (row % 2 === 0) {
                     // and column number is even, put light space
@@ -313,6 +313,7 @@ var Engine = (function(global) {
 		'images/wood.png',
 		'images/switch.png',
 		'images/button.png',
+		'images/buttonPress.png',
 		'images/woodOrig.png'
     ]);
     Resources.onReady(init);

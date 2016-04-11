@@ -34,6 +34,7 @@ var turn;
 // Holds move request coordinates and current mouse coordinates
 var moveRequest = {};
 var mouseLoc = {};
+var mouseDown = false;
 
 // Allows visable pieces previewing move
 var allowGhosts = true;
@@ -68,6 +69,7 @@ document.addEventListener("mouseup", function (event) {
 		copyArray(board.spaces, lastMove);
 	}
 	moveRequest = mouseLoc;
+	mouseDown = false;
 }, false);
 
 // Watches mouse movements for ghost overlays
@@ -85,6 +87,11 @@ document.addEventListener("mousemove", function (event) {
 		'x' : Math.floor(x / space.width),
 		'y' : Math.floor(y / space.height)
 	};
+}, false);
+
+// Returns true if mouse button is pressed
+document.addEventListener("mousedown", function (event) {
+	mouseDown = true;
 }, false);
 
 // Tabulate score by simply adding all the pieces of each color on the board
@@ -748,7 +755,13 @@ Scoreboard.prototype.printButton = function(label, xPosSpace) {
 	var x = (space.width * xPosSpace + 32) - (label.length * 7.5 / 2);
 	ctx.fillText(label, x, ghostOnY + 38);
 	// Display button
-	var buttonSprite = Resources.get('images/button.png');
+	// Display image (up or down) based on if user click's on
+	//  button's location on the board
+	var buttonSprite = Resources.get((mouseDown && mouseLoc.y === 12 &&
+									  (mouseLoc.x >= xPosSpace - 1 &&
+									  mouseLoc.x <= xPosSpace)) ?
+									 'images/buttonPress.png' :
+									 'images/button.png');
 	ctx.drawImage(buttonSprite, space.width * xPosSpace, ghostOnY, 64, 26);
 };
 
