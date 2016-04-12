@@ -61,7 +61,7 @@ function init2DArray(a) {
 	a[4][3] = 'black';
 }
 
-
+// TODO: make the input event listeners more DRY
 // Waits for mouse clicks and sends the info moveRequest variable
 document.addEventListener("mouseup", function (event) {
 	userClick = true;
@@ -92,6 +92,66 @@ document.addEventListener("mousemove", function (event) {
 // Returns true if mouse button is pressed
 document.addEventListener("mousedown", function (event) {
 	mouseDown = true;
+}, false);
+
+// Prevent page from scrolling when touch is detected
+document.body.addEventListener("touchstart", function (event) {
+	if (event.target === document.getElementById("myCanvas")) {
+		event.preventDefault();
+	}
+}, false);
+document.body.addEventListener("touchend", function (event) {
+	if (event.target === document.getElementById("myCanvas")) {
+		event.preventDefault();
+	}
+}, false);
+document.body.addEventListener("touchmove", function (event) {
+	if (event.target === document.getElementById("myCanvas")) {
+		event.preventDefault();
+	}
+}, false);
+
+// Watches touch movements for ghost overlays
+document.addEventListener("touchmove", function (event) {
+	var x = event.targetTouches[0].pageX;
+	var y = event.targetTouches[0].pageY;
+
+	var canvas = this.getElementById("myCanvas");
+
+	x -= (canvas.offsetLeft + space.width);
+	y -= (canvas.offsetTop + space.height);
+
+	// Translate move into whole space numbers on the board
+	mouseLoc = {
+		'x' : Math.floor(x / space.width),
+		'y' : Math.floor(y / space.height)
+	};
+}, false);
+
+document.addEventListener("touchstart", function (event) {
+	var x = event.targetTouches[0].pageX;
+	var y = event.targetTouches[0].pageY;
+
+	var canvas = this.getElementById("myCanvas");
+
+	x -= (canvas.offsetLeft + space.width);
+	y -= (canvas.offsetTop + space.height);
+
+	// Translate move into whole space numbers on the board
+	mouseLoc = {
+		'x' : Math.floor(x / space.width),
+		'y' : Math.floor(y / space.height)
+	};
+}, false);
+
+// Listen for user touch
+document.addEventListener("touchend", function (event) {
+	userClick = true;
+	if (!arraysHaveEqualContents(ghostBoard.spaces, board.spaces)) {
+		copyArray(board.spaces, lastMove);
+	}
+	moveRequest = mouseLoc;
+	mouseDown = false;
 }, false);
 
 // Tabulate score by simply adding all the pieces of each color on the board
