@@ -355,7 +355,7 @@ Board.prototype.handleInput = function(move) {
 				// If a legal move is found upon skipping turn, alert players
 				if (this.legalMoveAvailable()) {
 					alert = {
-						'string' : 'Skipping' +
+						'string' : 'Skipping ' +
 							((turn === 'white') ? 'black' : 'white') +
 							"'s turn!",
 						'yPos' : 400,
@@ -706,7 +706,10 @@ Player.prototype.handleInput = function(move, board) {
  * @constructor
  */
 var Scoreboard = function() {
-
+	this.secondsToFlash = 3;
+	this.flashAlpha = 1.0;
+	this.alphaMin = .25;
+	this.isFlashingDown = true;
 };
 
 // Update scoreboard info
@@ -721,6 +724,22 @@ Scoreboard.prototype.update = function(dt) {
 			alert.seconds = 0;
 		}
 	}
+
+	// Flashing text controller
+	// Count flashAlpha down to 0
+	if (this.isFlashingDown) {
+		this.flashAlpha -= ((1 / this.secondsToFlash) * dt);
+		if (this.flashAlpha <= this.alphaMin) {
+			this.isFlashingDown = false;
+		}
+	}
+	// Once flashAlpha is at 0, count back up to 0
+	if (!this.isFlashingDown) {
+		this.flashAlpha += ((1 / this.secondsToFlash) * dt);
+		if (this.flashAlpha >= 1) {
+			this.isFlashingDown = true;
+		}
+	}
 };
 
 // Render Scoreboard
@@ -733,11 +752,13 @@ Scoreboard.prototype.render = function() {
 
     // Display who's turn it is
     var messageString = "It's " + turn + "'s turn";
+	ctx.globalAlpha = this.flashAlpha;
     ctx.fillText(messageString, 64, 372);
+	ctx.globalAlpha = 1;
 
     // Render scores
-	this.printScore(player1, 32, 325);
-	this.printScore(player2, 200, 325);
+	this.printScore(player1, 64, 320);
+	this.printScore(player2, 192, 320);
 
 	// Print messages, if any
 	if (alert.seconds > 0) {
@@ -770,7 +791,8 @@ Scoreboard.prototype.printScore = function(player, xPos, yPos) {
 		space.width, space.height);
     // Draw Player score
     var scoreString = 'x ' + player.score;
-    ctx.fillText(scoreString, xPos + 40, (yPos + 25));
+	ctx.font = 'bold 20px Courier';
+    ctx.fillText(scoreString, xPos + 40, (yPos + 24));
 };
 
 /**
