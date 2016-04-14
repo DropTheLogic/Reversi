@@ -364,6 +364,7 @@ Board.prototype.handleInput = function(move) {
 				}
 				// If the skip provides no legal moves, the game is over
 				else {
+					turn = (turn === 'white') ? 'black' : 'white';
 					var winner = (player1.score > player2.score) ?
 						player1.color : player2.color;
 					alert = {
