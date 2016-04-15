@@ -88,13 +88,14 @@ var Engine = (function(global) {
         /* Use the browser's requestAnimationFrame function to call this
          * function again as soon as the browser is able to draw another frame.
          */
-        // First, check if game is over, kick the loop to the gameOverScreen
-        if (isGameOver) {
-            win.requestAnimationFrame(gameOverScreen);
-        }
-        else {
-            win.requestAnimationFrame(main);
-        }
+		win.requestAnimationFrame(main);
+//        // First, check if game is over, kick the loop to the gameOverScreen
+//        if (isGameOver) {
+//            win.requestAnimationFrame(gameOverScreen);
+//        }
+//        else {
+//            win.requestAnimationFrame(main);
+//        }
     }
 
     /* This function does some initial setup that should only occur once,

@@ -322,6 +322,10 @@ Board.prototype.handleInput = function(move) {
 			// Copy temp (old current board) to last move
 			copyArray(tempArr, lastMove);
 			turn = (turn === 'white') ? 'black' : 'white';
+			if (isGameOver) {
+				isGameOver = false;
+				alert = {};
+			}
 		}
 	}
 
@@ -370,8 +374,9 @@ Board.prototype.handleInput = function(move) {
 					alert = {
 						'string' : 'Game over, ' + winner + ' wins!',
 						'yPos' : 400,
-						'seconds' : 3
+						'seconds' : 99
 					};
+					isGameOver = true;
 				}
             }
 		}
@@ -754,7 +759,9 @@ Scoreboard.prototype.render = function() {
     // Display who's turn it is
     var messageString = "It's " + turn + "'s turn";
 	ctx.globalAlpha = this.flashAlpha;
-    ctx.fillText(messageString, 64, 372);
+    if (!isGameOver) {
+		ctx.fillText(messageString, 64, 372);
+	}
 	ctx.globalAlpha = 1;
 
     // Render scores
