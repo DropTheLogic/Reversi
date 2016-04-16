@@ -41,10 +41,6 @@ var allowGhosts = true;
 // Size and placement of on/off toggle
 var ghostOnX = space.width * 7;
 var ghostOnY = space.height * 13;
-var ghostOffX = ghostOnX + space.width;
-var ghostOffY = space.height * 13;
-var ghostW = space.width;
-var ghostH = space.height;
 var userClick = false;
 
 // Last move, 2D Array holding game board space ownership and temp, ditto
