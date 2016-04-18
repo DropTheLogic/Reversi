@@ -90,25 +90,12 @@ document.addEventListener("mousedown", function (event) {
 	mouseDown = true;
 }, false);
 
-// Prevent page from scrolling when touch is detected
-document.body.addEventListener("touchstart", function (event) {
-	if (event.target === document.getElementById("myCanvas")) {
-		event.preventDefault();
-	}
-}, false);
-document.body.addEventListener("touchend", function (event) {
-	if (event.target === document.getElementById("myCanvas")) {
-		event.preventDefault();
-	}
-}, false);
-document.body.addEventListener("touchmove", function (event) {
-	if (event.target === document.getElementById("myCanvas")) {
-		event.preventDefault();
-	}
-}, false);
-
 // Watches touch movements for ghost overlays
 document.addEventListener("touchmove", function (event) {
+	// Prevent page from scrolling when touch is detected
+	if (event.target === document.getElementById("myCanvas")) {
+		event.preventDefault();
+	}
 	var x = event.targetTouches[0].pageX;
 	var y = event.targetTouches[0].pageY;
 
@@ -125,6 +112,10 @@ document.addEventListener("touchmove", function (event) {
 }, false);
 
 document.addEventListener("touchstart", function (event) {
+	// Prevent page from scrolling when touch is detected
+	if (event.target === document.getElementById("myCanvas")) {
+		event.preventDefault();
+	}
 	var x = event.targetTouches[0].pageX;
 	var y = event.targetTouches[0].pageY;
 
@@ -142,6 +133,10 @@ document.addEventListener("touchstart", function (event) {
 
 // Listen for user touch
 document.addEventListener("touchend", function (event) {
+	// Prevent page from scrolling when touch is detected
+	if (event.target === document.getElementById("myCanvas")) {
+		event.preventDefault();
+	}
 	userClick = true;
 	if (!arraysHaveEqualContents(ghostBoard.spaces, board.spaces)) {
 		copyArray(board.spaces, lastMove);
