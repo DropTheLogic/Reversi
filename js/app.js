@@ -43,9 +43,8 @@ var ghostOnX = space.width * 7;
 var ghostOnY = space.height * 13;
 var userClick = false;
 
-// Last move, 2D Array holding game board space ownership and temp, ditto
-var lastMove = [8];
-var tempArr = [8];
+// Object to hold history of all moves. Each element is a 2D array
+var movesHistory = {};
 
 function init2DArray(a) {
 	for (var row = 0; row < 8; row++) {
@@ -62,7 +61,7 @@ function init2DArray(a) {
 document.addEventListener("mouseup", function (event) {
 	userClick = true;
 	if (!arraysHaveEqualContents(ghostBoard.spaces, board.spaces)) {
-		copyArray(board.spaces, lastMove);
+		push2DArray(movesHistory, board.spaces);
 	}
 	moveRequest = mouseLoc;
 	mouseDown = false;
@@ -139,7 +138,7 @@ document.addEventListener("touchend", function (event) {
 	}
 	userClick = true;
 	if (!arraysHaveEqualContents(ghostBoard.spaces, board.spaces)) {
-		copyArray(board.spaces, lastMove);
+		push2DArray(movesHistory, board.spaces);
 	}
 	moveRequest = mouseLoc;
 	mouseDown = false;
@@ -201,6 +200,19 @@ function print2DArray(a) {
 		console.log(lineString + '\n_________________');
 	}
 	console.log('*******************************')
+}
+
+// Append 2D array element to an Object
+function push2DArray(obj, arr) {
+	// Find current length of object
+	var oLength = Object.keys(obj).length;
+
+	// Initialize 2D array at the end of the object
+	movesHistory[oLength] = [arr.length];
+	init2DArray(movesHistory[oLength - 1]);
+
+	// Copy given array into newly initialized array
+	copyArray(arr, obj[oLength - 1]);
 }
 
 /**
@@ -304,14 +316,17 @@ Board.prototype.handleInput = function(move) {
 		move.x <= 4 &&
 		move.y === 12 && userClick) {
 		var undo = true; //confirm('Undo last move?');
+		// Find length of moves history Object
+		var oLength = Object.keys(movesHistory).length;
 		// Make sure move isn't first move
-		if (undo && !arraysHaveEqualContents(this.spaces, lastMove)) {
-			// Copy current board matrix to temp
-			copyArray(board.spaces, tempArr);
-			// Copy last move to board
-			copyArray(lastMove, board.spaces);
-			// Copy temp (old current board) to last move
-			copyArray(tempArr, lastMove);
+		if (undo && oLength > 1) {
+			// Copy previous move onto gameboard
+			copyArray(movesHistory[oLength - 2], board.spaces);
+			// Delete last move from the history
+			delete movesHistory[oLength - 1];
+			// Update history object length
+			oLength = Object.keys(movesHistory).length;
+			// Revert turn
 			turn = (turn === 'white') ? 'black' : 'white';
 			if (isGameOver) {
 				isGameOver = false;
@@ -866,9 +881,9 @@ function initGame() {
     // Initialize ghost board matrix
     ghostBoard = new Board(true);
     ghostBoard.initBoard();
-	//Initialize Undo matrices
-	init2DArray(lastMove);
-	init2DArray(tempArr);
+	//Initialize Undo history object
+	movesHistory = {};
+	movesHistory[0] = [];
     // Instantiate players
     player1 = new Player('Danny', 'black');
 	player2 = new Player('Lauren', 'white');
