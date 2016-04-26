@@ -132,7 +132,6 @@ var Engine = (function(global) {
         score.update(dt);
         board.update(dt);
         ghostBoard.update(dt);
-        //messages.update(dt);
     }
 
     /* This function initially draws the "game level", it will then call
@@ -255,9 +254,6 @@ var Engine = (function(global) {
 
         // Render player and enemies
         renderEntities();
-
-        // Render any Messages
-        //messages.render();
     }
 
     /* This function is called by the render function and is called on each game
@@ -265,18 +261,14 @@ var Engine = (function(global) {
      * on your enemy and player entities within app.js
      */
     function renderEntities() {
-        /* Loop through all of the objects within the allEnemies array and call
-         * the render function you have defined.
-         */
         board.render();
         if (allowGhosts) {
             ghostBoard.render();
         }
     }
 
-    /* This function does nothing but it could have been a good place to
-     * handle game reset states - maybe a new game menu or a game over screen
-     * those sorts of things. It's only called once by the init() method.
+    /* This function calls the initGame defined in app.js, initializing all
+	 * game-critical variables. It's only called once by the init() method.
      */
     function reset() {
         initGame();
