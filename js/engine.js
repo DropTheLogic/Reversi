@@ -132,6 +132,7 @@ var Engine = (function(global) {
         score.update(dt);
         board.update(dt);
         ghostBoard.update(dt);
+        overlay.update(dt);
     }
 
     /* This function initially draws the "game level", it will then call
@@ -265,6 +266,7 @@ var Engine = (function(global) {
         if (allowGhosts) {
             ghostBoard.render();
         }
+        overlay.render();
     }
 
     /* This function calls the initGame defined in app.js, initializing all
@@ -307,7 +309,8 @@ var Engine = (function(global) {
 		'images/switch.png',
 		'images/button.png',
 		'images/buttonPress.png',
-		'images/woodOrig.png'
+		'images/woodOrig.png',
+        'images/title.png'
     ]);
     Resources.onReady(init);
 

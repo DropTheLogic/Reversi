@@ -444,7 +444,7 @@ Board.prototype.takeTurn = function(move) {
 							if (turnTaken) { break; }
 						}
 					}
-					// If an empty space is found, direction is invalid; 
+					// If an empty space is found, direction is invalid;
 					//  end search
 					else if (this.spaces[dx][dy] === undefined) {
 						break;
@@ -667,6 +667,45 @@ Scoreboard.prototype.printButton = function(label, xPosSpace) {
 };
 
 /**
+ * Overlay class, used to print entire pages or screens overtop of the
+ * gamaeboard. Use to display messages or for end of game or start screens.
+ * @constructor
+ */
+var Overlay = function() {
+	this.start();
+	this.isVisible = true;
+};
+
+// Update overlay variables
+Overlay.prototype.update = function(dt) {
+	if (userClick) {
+		this.isVisible = false;
+	}
+};
+
+// Render Overlay screen
+Overlay.prototype.render = function() {
+	if (this.isVisible) {
+		this.print();
+	}
+};
+
+// Initialize overlay for start game screen
+Overlay.prototype.start = function() {
+
+};
+
+// Overlay for a pop-up message
+Overlay.prototype.popup = function() {
+
+};
+
+// Print overlay to canvas
+Overlay.prototype.print = function() {
+
+};
+
+/**
  * Instantiate players and boards
  */
 var player1, player2, board, ghostBoard;
@@ -700,4 +739,6 @@ function initGame() {
 	turn = 'black';
     // Make the scoreboard
     score = new Scoreboard();
+    // Make overlay
+    overlay = new Overlay();
 }
