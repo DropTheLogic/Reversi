@@ -74,10 +74,12 @@ document.addEventListener("mousemove", function (event) {
 	y -= (canvas.offsetTop + space.height);
 
 	// Translate move into whole space numbers on the board
-	mouseLoc = {
-		'x' : Math.floor(x / space.width),
-		'y' : Math.floor(y / space.height)
-	};
+	if (!isGameOver) {
+		mouseLoc = {
+			'x' : Math.floor(x / space.width),
+			'y' : Math.floor(y / space.height)
+		};
+	}
 }, false);
 
 // Returns true if mouse button is pressed
@@ -100,10 +102,13 @@ document.addEventListener("touchmove", function (event) {
 	y -= (canvas.offsetTop + space.height);
 
 	// Translate move into whole space numbers on the board
-	mouseLoc = {
-		'x' : Math.floor(x / space.width),
-		'y' : Math.floor(y / space.height)
-	};
+	if (!isGameOver) {
+		mouseLoc = {
+			'x' : Math.floor(x / space.width),
+			'y' : Math.floor(y / space.height)
+		};
+	}
+	mouseDown = true;
 }, false);
 
 document.addEventListener("touchstart", function (event) {
@@ -120,10 +125,13 @@ document.addEventListener("touchstart", function (event) {
 	y -= (canvas.offsetTop + space.height);
 
 	// Translate move into whole space numbers on the board
-	mouseLoc = {
-		'x' : Math.floor(x / space.width),
-		'y' : Math.floor(y / space.height)
-	};
+	if (!isGameOver) {
+		mouseLoc = {
+			'x' : Math.floor(x / space.width),
+			'y' : Math.floor(y / space.height)
+		};
+	}
+	mouseDown = true;
 }, false);
 
 // Listen for user touch
@@ -373,11 +381,13 @@ Board.prototype.handleInput = function(move) {
 					turn = (turn === 'white') ? 'black' : 'white';
 					var winner = (player1.score > player2.score) ?
 						player1.color : player2.color;
-					alert = {
-						'string' : 'Game over, ' + winner + ' wins!',
-						'yPos' : 400,
-						'seconds' : 99
-					};
+					overlay.isVisible = true;
+					overlay.gameOver(winner);
+// 					alert = {
+// 						'string' : 'Game over, ' + winner + ' wins!',
+// 						'yPos' : 400,
+// 						'seconds' : 99
+// 					};
 					isGameOver = true;
 				}
             }
@@ -566,6 +576,7 @@ Scoreboard.prototype.render = function() {
 
     ctx.font = 'bold 20px Courier';
     ctx.fillStyle = '#000'; // For black text
+    ctx.textAlign = 'left';
 
     // Display who's turn it is
     var messageString = "It's " + turn + "'s turn";
@@ -652,6 +663,7 @@ Scoreboard.prototype.printButton = function(label, xPosSpace) {
 	// Display label
 	ctx.font = 'bold 12px Courier';
 	ctx.fillStyle = '#000'; // For black text
+	ctx.textAlign = 'left';
 	// Center text under button by finding length of string
 	var x = (space.width * xPosSpace + 32) - (label.length * 7.5 / 2);
 	ctx.fillText(label, x, ghostOnY + 38);
@@ -678,7 +690,9 @@ var Overlay = function() {
 
 // Update overlay variables
 Overlay.prototype.update = function(dt) {
-	if (userClick) {
+	if (mouseDown) {
+		isReady = true;
+		isGameOver = false;
 		this.isVisible = false;
 	}
 };
@@ -692,7 +706,39 @@ Overlay.prototype.render = function() {
 
 // Initialize overlay for start game screen
 Overlay.prototype.start = function() {
+	// Set overlay size
+	this.width = CANVAS_WIDTH - 32;
+	this.height = CANVAS_HEIGHT - 32;
+	this.xOrig = (CANVAS_WIDTH - this.width) / 2;
+	this.yOrig = (CANVAS_HEIGHT - this.height) / 2;
 
+	// Set title image
+	this.sprite = Resources.get('images/title.png');
+	this.sprite.width /= 2;
+	this.sprite.height /= 2;
+
+	// Set title message
+	this.message = 'Click anywhere to play';
+	this.messageX = 32;
+	this.messageY = 250;
+	this.messageFont =  'bold 18px Courier';
+	this.messageStyle = '#4F2E0F';
+};
+
+// Overlay for game overlay, takes a string to display winner
+Overlay.prototype.gameOver = function(winner) {
+	// Set overlay size
+	this.width = CANVAS_WIDTH - 64;
+	this.height = CANVAS_HEIGHT - 64;
+	this.xOrig = (CANVAS_WIDTH - this.width) / 2;
+	this.yOrig = (CANVAS_HEIGHT - this.height) / 2;
+
+	// Set title message
+	this.message = 'Game Over, ' + winner + ' wins!';
+	this.messageX = 32;
+	this.messageY = 250;
+	this.messageFont =  'bold 18px Courier';
+	this.messageStyle = '#4F2E0F';
 };
 
 // Overlay for a pop-up message
@@ -702,7 +748,28 @@ Overlay.prototype.popup = function() {
 
 // Print overlay to canvas
 Overlay.prototype.print = function() {
-
+	// Print overlay background
+	ctx.fillStyle = '#fff';
+	ctx.strokeStyle = '#000';
+	ctx.globalAlpha = 0.9;
+	ctx.fillRect(this.xOrig, this.yOrig, this.width, this.height);
+	ctx.strokeRect(this.xOrig, this.yOrig, this.width, this.height);
+	// Print image, if any
+	if (this.sprite) {
+		ctx.drawImage(
+			this.sprite,
+			(CANVAS_WIDTH - this.sprite.width) / 2,
+			this.yOrig + 32,
+			this.sprite.width,
+			this.sprite.height);
+	}
+	// Print Message, if any
+	if (this.message) {
+		ctx.fillStyle = this.messageStyle;
+		ctx.font = this.messageFont;
+		ctx.textAlign = "center";
+		ctx.fillText(this.message, CANVAS_WIDTH / 2, this.messageY);
+	}
 };
 
 /**
@@ -720,7 +787,7 @@ function initGame() {
 		'seconds' : 3
 	};
     // Set game state to not over
-    isGameOver = false;
+    isGameOver = true;
     // Is ready is reset
     isReady = false;
     // Initialize main board matrix
