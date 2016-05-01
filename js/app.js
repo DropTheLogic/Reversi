@@ -10,6 +10,7 @@
  */
 var isGameOver = false;
 var isReady = false; // Is user ready for a new game
+var resetRequest = false;
 var alert = {};
 
 // Send these to the canvas variable in the Engine
@@ -309,10 +310,9 @@ Board.prototype.handleInput = function(move) {
 	if (move.x >= 0 &&
 		move.x <= 1 &&
 		move.y === 12 && userClick) {
-		var reset = confirm('End current game and start a new one?');
-		if (reset) {
-			initGame();
-		}
+		// Reset mouseLoc to prevent infinte loop
+		mouseLoc = {};
+		resetRequest = confirm('End current game and start a new one?');
 	}
 
 	// Check if user wants to undo move
@@ -790,6 +790,7 @@ function initGame() {
     isGameOver = true;
     // Is ready is reset
     isReady = false;
+    resetRequest = false;
     // Initialize main board matrix
     board = new Board(false);
     board.initBoard();
