@@ -714,8 +714,8 @@ Overlay.prototype.start = function() {
 
 	// Set title image
 	this.sprite = Resources.get('images/title.png');
-	this.sprite.width /= 2;
-	this.sprite.height /= 2;
+	this.sprite.width =  280;
+	this.sprite.height = 88;
 
 	// Set title message
 	this.message = 'Click anywhere to play';
