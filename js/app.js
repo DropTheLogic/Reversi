@@ -12,6 +12,7 @@ var isGameOver = false;
 var isReady = false; // Is user ready for a new game
 var resetRequest = false;
 var alert = {};
+var autoPlayIsOn = true;
 
 // Send these to the canvas variable in the Engine
 var CANVAS_WIDTH = 320;
@@ -220,6 +221,11 @@ function push2DArray(obj, arr) {
 	copyArray(arr, obj[oLength - 1]);
 }
 
+// Return random number between two given integers (inclusive)
+function getRand(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 /**
  * Gameboard Class, which will create a 2D matrix to hold gameboard
  * @constructor
@@ -279,6 +285,14 @@ Board.prototype.update = function(dt) {
 		copyArray(board.spaces, this.spaces);
 		// Then check the mouse location and give an overlay for that move
 		this.handleInput(mouseLoc);
+	}
+
+	else if (autoPlayIsOn && isReady && !isGameOver) {
+		moveRequest = {
+			'x' : getRand(0, 7),
+			'y' : getRand(0, 7)
+		}
+		this.handleInput(moveRequest);
 	}
 
 	// The main board will handle input only when the user clicks
