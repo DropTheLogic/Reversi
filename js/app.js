@@ -287,12 +287,20 @@ Board.prototype.update = function(dt) {
 		this.handleInput(mouseLoc);
 	}
 
+	// If autoPlayIsOn, take turns automatically
 	else if (autoPlayIsOn && isReady && !isGameOver) {
+		// Randomly take moves
 		moveRequest = {
 			'x' : getRand(0, 7),
 			'y' : getRand(0, 7)
 		}
+		// Send move to be handled
 		this.handleInput(moveRequest);
+
+		// Add to move to undo list, if applicable
+		if (!arraysHaveEqualContents(ghostBoard.spaces, board.spaces)) {
+			push2DArray(movesHistory, board.spaces);
+		}
 	}
 
 	// The main board will handle input only when the user clicks
@@ -403,6 +411,7 @@ Board.prototype.handleInput = function(move) {
 // 						'seconds' : 99
 // 					};
 					isGameOver = true;
+					isReady = false;
 				}
             }
 		}
@@ -595,7 +604,7 @@ Scoreboard.prototype.render = function() {
     // Display who's turn it is
     var messageString = "It's " + turn + "'s turn";
 	ctx.globalAlpha = this.flashAlpha;
-    if (!isGameOver) {
+    if (!isGameOver && isReady) {
 		ctx.fillText(messageString, 64, 372);
 	}
 	ctx.globalAlpha = 1;
@@ -705,7 +714,6 @@ var Overlay = function() {
 // Update overlay variables
 Overlay.prototype.update = function(dt) {
 	if (mouseDown) {
-		isReady = true;
 		isGameOver = false;
 		this.isVisible = false;
 	}
@@ -803,7 +811,7 @@ function initGame() {
     // Set game state to not over
     isGameOver = true;
     // Is ready is reset
-    isReady = false;
+    isReady = true;
     resetRequest = false;
     // Initialize main board matrix
     board = new Board(false);
