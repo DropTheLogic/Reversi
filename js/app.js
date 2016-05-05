@@ -11,7 +11,6 @@
 var isGameOver = false;
 var isReady = false; // Is user ready for a new game
 var resetRequest = false;
-var alert = {};
 var autoPlayIsOn = true;
 
 // Send these to the canvas variable in the Engine
@@ -288,7 +287,7 @@ Board.prototype.update = function(dt) {
 	}
 
 	// If autoPlayIsOn, take turns automatically
-	else if (autoPlayIsOn && isReady && !isGameOver) {
+	else if (autoPlayIsOn && isReady && !isGameOver && !overlay.isVisible) {
 		// Randomly take moves
 		moveRequest = {
 			'x' : getRand(0, 7),
@@ -356,7 +355,6 @@ Board.prototype.handleInput = function(move) {
 			turn = (turn === 'white') ? 'black' : 'white';
 			if (isGameOver) {
 				isGameOver = false;
-				alert = {};
 			}
 		}
 	}
@@ -390,26 +388,18 @@ Board.prototype.handleInput = function(move) {
 				turn = (turn === 'white') ? 'black' : 'white';
 				// If a legal move is found upon skipping turn, alert players
 				if (this.legalMoveAvailable()) {
-					alert = {
-						'string' : 'Skipping ' +
+					var mess = 'Skipping ' +
 							((turn === 'white') ? 'black' : 'white') +
-							"'s turn!",
-						'yPos' : 400,
-						'seconds' : 3
-					};
+							"'s turn!";
+					overlay.popup(mess);
 				}
 				// If the skip provides no legal moves, the game is over
 				else {
 					turn = (turn === 'white') ? 'black' : 'white';
 					var winner = (player1.score > player2.score) ?
 						player1.color : player2.color;
-					overlay.isVisible = true;
-					overlay.gameOver(winner);
-// 					alert = {
-// 						'string' : 'Game over, ' + winner + ' wins!',
-// 						'yPos' : 400,
-// 						'seconds' : 99
-// 					};
+					var mess = 'Game over, ' + winner + ' wins!';
+					overlay.popup(mess);
 					isGameOver = true;
 					isReady = false;
 				}
@@ -564,17 +554,6 @@ var Scoreboard = function() {
 
 // Update scoreboard info
 Scoreboard.prototype.update = function(dt) {
-	// Check if there's a message to display
-	if (alert.seconds > 0) {
-		// Count down timer for visabilty
-		alert.seconds -= (1 * dt);
-		// Check if timer is up
-		if (alert.seconds <= 0) {
-			// Reset alert
-			alert.seconds = 0;
-		}
-	}
-
 	// Flashing text controller
 	// Count flashAlpha down to 0
 	if (this.isFlashingDown) {
@@ -613,11 +592,6 @@ Scoreboard.prototype.render = function() {
 	this.printScore(player1, 64, 320);
 	this.printScore(player2, 192, 320);
 
-	// Print messages, if any
-	if (alert.seconds > 0) {
-		this.printAlert(alert);
-	}
-
 	// Show ghost moves option
 	this.showGhostToggle();
 
@@ -646,21 +620,6 @@ Scoreboard.prototype.printScore = function(player, xPos, yPos) {
     var scoreString = 'x ' + player.score;
 	ctx.font = 'bold 20px Courier';
     ctx.fillText(scoreString, xPos + 40, (yPos + 24));
-};
-
-/**
- * Prints Alert message (usually at bottom of scoreboard)
- * @param {object} message - Message to display. Message object must have
- * the following properties: 'string', 'yPos', and 'seconds'. 'string' is
- * the actual message string, 'yPos' is where, in pixels, to display the
- * message, and 'seconds' is how long the message is to be displayed.
- */
-Scoreboard.prototype.printAlert = function(message) {
-	ctx.font = 'bold 20px Courier';
-	ctx.fillStyle = '#000'; // For black text
-	// Find message length and use to center alert
-	var x = CANVAS_WIDTH / 2 - (message.string.length * 11 / 2);
-	ctx.fillText(message.string, x, message.yPos);
 };
 
 // Prints ghost moves toggle button
@@ -747,25 +706,25 @@ Overlay.prototype.start = function() {
 	this.messageStyle = '#4F2E0F';
 };
 
-// Overlay for game overlay, takes a string to display winner
-Overlay.prototype.gameOver = function(winner) {
+// Overlay for a pop-up message, takes string for message
+Overlay.prototype.popup = function(mString) {
 	// Set overlay size
 	this.width = CANVAS_WIDTH - 64;
-	this.height = CANVAS_HEIGHT - 64;
+	this.height = 256;
 	this.xOrig = (CANVAS_WIDTH - this.width) / 2;
-	this.yOrig = (CANVAS_HEIGHT - this.height) / 2;
+	this.yOrig = 32;
 
-	// Set title message
-	this.message = 'Game Over, ' + winner + ' wins!';
+	// Set message and placement
+	this.message = mString;
 	this.messageX = 32;
-	this.messageY = 250;
+	this.messageY = 128 + 32;
 	this.messageFont =  'bold 18px Courier';
 	this.messageStyle = '#4F2E0F';
-};
 
-// Overlay for a pop-up message
-Overlay.prototype.popup = function() {
+	// Eliminate image
+	this.sprite = '';
 
+	overlay.isVisible = true;
 };
 
 // Print overlay to canvas
@@ -802,12 +761,6 @@ var player1, player2, board, ghostBoard;
 // Create a fresh game state, called by the engine
 // at the beginning of every new game
 function initGame() {
-    // Display opening message
-    alert = {
-		'string' : "Let's Play Reversi!",
-		'yPos' : 405,
-		'seconds' : 3
-	};
     // Set game state to not over
     isGameOver = true;
     // Is ready is reset
