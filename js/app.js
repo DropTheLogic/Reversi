@@ -43,6 +43,9 @@ var userClick = false;
 // Object to hold history of all moves. Each element is a 2D array
 var movesHistory = {};
 
+// Hold each empty space on the gameboard
+var emptySpaces = [];
+
 function init2DArray(a) {
 	for (var row = 0; row < 8; row++) {
 		a[row] = new Array(8);
@@ -276,8 +279,26 @@ Board.prototype.legalMoveAvailable = function() {
     return false;
 };
 
+// Update the empty spaces in the gameboard
+Board.prototype.findEmptySpaces = function() {
+	// Reset array
+	emptySpaces = [];
+	// Scan board for empty spaces
+    if (!this.isAGhost) {
+        for (var i = 0; i < this.cols; i++) {
+            for (var j = 0; j < this.rows; j++) {
+				if (this.spaces[i][j] === undefined) {
+					// Add space to empty space array
+					emptySpaces.push({'x' : i, 'y' : j});
+				}
+            }
+        }
+    }
+};
+var wait = 3;
 // Update player's pieces within the board, when detected
 Board.prototype.update = function(dt) {
+
 	// For the ghost overlay matrix, input is handled on mousemove
 	if (this.isAGhost) {
 		// First, reset the matrix to copy the actual gameboard
@@ -288,11 +309,12 @@ Board.prototype.update = function(dt) {
 
 	// If autoPlayIsOn, take turns automatically
 	else if (autoPlayIsOn && isReady && !isGameOver && !overlay.isVisible) {
-		// Randomly take moves
-		moveRequest = {
-			'x' : getRand(0, 7),
-			'y' : getRand(0, 7)
-		}
+		// Lookup empty spaces
+		this.findEmptySpaces();
+
+		// Randomly take moves, from the available spaces
+		moveRequest = emptySpaces[getRand(0, (emptySpaces.length - 1))];
+
 		// Send move to be handled
 		this.handleInput(moveRequest);
 
