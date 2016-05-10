@@ -12,6 +12,8 @@ var isGameOver = false;
 var isReady = false; // Is user ready for a new game
 var resetRequest = false;
 var autoPlayIsOn = true;
+var waitTime = 1;
+var wait = 0;
 
 // Send these to the canvas variable in the Engine
 var CANVAS_WIDTH = 320;
@@ -295,7 +297,7 @@ Board.prototype.findEmptySpaces = function() {
         }
     }
 };
-var wait = 3;
+
 // Update player's pieces within the board, when detected
 Board.prototype.update = function(dt) {
 
@@ -308,7 +310,7 @@ Board.prototype.update = function(dt) {
 	}
 
 	// If autoPlayIsOn, take turns automatically
-	else if (autoPlayIsOn && isReady && !isGameOver && !overlay.isVisible) {
+	else if (autoPlayIsOn && isReady && !isGameOver && !overlay.isVisible && wait > waitTime) {
 		// Lookup empty spaces
 		this.findEmptySpaces();
 
@@ -328,6 +330,9 @@ Board.prototype.update = function(dt) {
 	else {
 		this.handleInput(moveRequest);
 	}
+
+	// Update wait timer
+	wait += (1 * dt);
 };
 
 // Account for user input on the board
@@ -398,6 +403,8 @@ Board.prototype.handleInput = function(move) {
 		// If turn was taken, reset moveRequest and advance turn
 		// Note: turn only advances if the main board reports a turn
 		if (turnTaken && !this.isAGhost) {
+			// Reset wait timer for autoPlay
+			wait = 0;
 			moveRequest = {};
 			turn = (turn === 'white') ? 'black' : 'white';
 
