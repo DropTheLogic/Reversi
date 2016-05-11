@@ -45,8 +45,9 @@ var userClick = false;
 // Object to hold history of all moves. Each element is a 2D array
 var movesHistory = {};
 
-// Hold each empty space on the gameboard
-var emptySpaces = [];
+// An array of objects with format: { x : Int, y : Int }
+// for each legal space on the gameboard
+var legalSpaces = [];
 
 function init2DArray(a) {
 	for (var row = 0; row < 8; row++) {
@@ -259,39 +260,46 @@ Board.prototype.initBoard = function() {
 
 // Check the board for existence of legal move. Returns true if found.
 Board.prototype.legalMoveAvailable = function() {
-    // Cycle through spaces of board and check for legality
-    // Only look wt the main playing board
-    if (!this.isAGhost) {
-        for (var i = 0; i < this.cols; i++) {
-            for (var j = 0; j < this.rows; j++) {
-                // Make sure space isn't already occupied
-                if (this.spaces[i][j] === undefined) {
-                    // Check all directions from that space for a valid move
-                    this.takeTurn({x : i, y : j});
-                    // If valid move is found, return true
-                    if (this.hasLegalMoves) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
+	// Cycle through spaces of board and check for legality
+	// Only look wt the main playing board
+	if (!this.isAGhost) {
+		for (var i = 0; i < this.cols; i++) {
+			for (var j = 0; j < this.rows; j++) {
+				// Make sure space isn't already occupied
+				if (this.spaces[i][j] === undefined) {
+					// Check all directions from that space for a valid move
+					this.takeTurn({x : i, y : j});
+					// If valid move is found, return true
+					if (this.hasLegalMoves) {
+						return true;
+					}
+				}
+			}
+		}
+	}
 
-    // If no valid moves were found, return false
-    return false;
+	// If no valid moves were found, return false
+	return false;
 };
 
 // Update the empty spaces in the gameboard
-Board.prototype.findEmptySpaces = function() {
+Board.prototype.findLegalSpaces = function() {
 	// Reset array
-	emptySpaces = [];
+	legalSpaces = [];
+
 	// Scan board for empty spaces
-    if (!this.isAGhost) {
-        for (var i = 0; i < this.cols; i++) {
-            for (var j = 0; j < this.rows; j++) {
+	if (!this.isAGhost) {
+		for (var i = 0; i < this.cols; i++) {
+			for (var j = 0; j < this.rows; j++) {
+				var eMove = { x : i, y : j };
+				// If space is empty
 				if (this.spaces[i][j] === undefined) {
-					// Add space to empty space array
-					emptySpaces.push({'x' : i, 'y' : j});
+					this.takeTurn(eMove);
+					// If space would yield a legal move
+					if (this.hasLegalMoves) {
+						// Add space to empty space array
+						legalSpaces.push(eMove);
+					}
 				}
             }
         }
@@ -310,12 +318,14 @@ Board.prototype.update = function(dt) {
 	}
 
 	// If autoPlayIsOn, take turns automatically
-	else if (autoPlayIsOn && isReady && !isGameOver && !overlay.isVisible && wait > waitTime) {
+	else if (autoPlayIsOn && isReady && !isGameOver &&
+		!overlay.isVisible && wait > waitTime) {
+
 		// Lookup empty spaces
-		this.findEmptySpaces();
+		this.findLegalSpaces();
 
 		// Randomly take moves, from the available spaces
-		moveRequest = emptySpaces[getRand(0, (emptySpaces.length - 1))];
+		moveRequest = legalSpaces[getRand(0, (legalSpaces.length - 1))];
 
 		// Send move to be handled
 		this.handleInput(moveRequest);
