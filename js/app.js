@@ -11,7 +11,7 @@
 var isGameOver = false;
 var isReady = false; // Is user ready for a new game
 var resetRequest = false;
-var autoPlayIsOn = true;
+var autoPlayIsOn = false;
 var waitTime = 1;
 var wait = 0;
 
@@ -416,6 +416,7 @@ Board.prototype.handleInput = function(move) {
 			// Reset wait timer for autoPlay
 			wait = 0;
 			moveRequest = {};
+			score.initTurnAnimation();
 			turn = (turn === 'white') ? 'black' : 'white';
 
 			// Update player score
@@ -585,49 +586,69 @@ Player.prototype.handleInput = function(move, board) {
  * @constructor
  */
 var Scoreboard = function() {
+	this.messageString = 'Black begins!';
+	this.firstTime = true;
 	this.secondsToFlash = 3;
 	this.flashAlpha = 1.0;
-	this.alphaMin = .25;
+	this.alphaMin = 0.1;
+	this.alphaMax = 0.7;
 	this.isFlashingDown = true;
+};
+
+Scoreboard.prototype.initTurnAnimation = function() {
+	this.delayToFlash = 2;
+	this.flashAlpha = 0;
+	this.firstTime = false;
 };
 
 // Update scoreboard info
 Scoreboard.prototype.update = function(dt) {
 	// Flashing text controller
-	// Count flashAlpha down to 0
-	if (this.isFlashingDown) {
-		this.flashAlpha -= ((1 / this.secondsToFlash) * dt);
-		if (this.flashAlpha <= this.alphaMin) {
-			this.isFlashingDown = false;
+	// When delay timer is up
+	if (this.delayToFlash < 0) {
+		// Count flashAlpha down to alphaMin
+		if (this.isFlashingDown) {
+			this.flashAlpha -= ((1 / this.secondsToFlash) * dt);
+			if (this.flashAlpha <= this.alphaMin) {
+				this.isFlashingDown = false;
+			}
+		}
+		// Count back up to alphaMax
+		if (!this.isFlashingDown) {
+			this.flashAlpha += ((1 / this.secondsToFlash) * dt);
+			if (this.flashAlpha >= this.alphaMax) {
+				this.isFlashingDown = true;
+			}
 		}
 	}
-	// Once flashAlpha is at 0, count back up to 0
-	if (!this.isFlashingDown) {
-		this.flashAlpha += ((1 / this.secondsToFlash) * dt);
-		if (this.flashAlpha >= 1) {
-			this.isFlashingDown = true;
-		}
+	// Countdown delay timer
+	else {
+		this.delayToFlash -= (1 * dt);
 	}
 };
 
 // Render Scoreboard
 Scoreboard.prototype.render = function() {
-    // Clear area of any pixel remnants
-    //ctx.clearRect(0, 320, CANVAS_WIDTH, 200);
 
-    ctx.font = 'bold 20px Courier';
-    ctx.fillStyle = '#000'; // For black text
-    ctx.textAlign = 'left';
+	ctx.font = 'bold 20px Courier';
+	ctx.fillStyle = '#000';
+	ctx.textAlign = 'center';
 
-    // Display who's turn it is
-    var messageString = "It's " + turn + "'s turn";
-	ctx.globalAlpha = this.flashAlpha;
-    if (!isGameOver && isReady) {
-		ctx.fillText(messageString, 64, 372);
+	// Display who's turn it is
+	if (!isGameOver && isReady) {
+		// Attach appropriate alpha level for message
+		ctx.globalAlpha = this.flashAlpha;
+		// Update turn name, if not at the beginning of the game
+		if (!this.firstTime) {
+			this.messageString = "It's " + turn + "'s turn";
+		}
+		// Print message
+		ctx.fillText(this.messageString, CANVAS_WIDTH / 2, 372);
 	}
 	ctx.globalAlpha = 1;
 
-    // Render scores
+	// Render scores
+	ctx.textAlign = 'left';
 	this.printScore(player1, 64, 320);
 	this.printScore(player2, 192, 320);
 
@@ -821,6 +842,7 @@ function initGame() {
 	turn = 'black';
     // Make the scoreboard
     score = new Scoreboard();
+    score.firstTime = true;
     // Make overlay
     overlay = new Overlay();
 }
