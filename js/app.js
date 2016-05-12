@@ -11,8 +11,8 @@
 var isGameOver = false;
 var isReady = false; // Is user ready for a new game
 var resetRequest = false;
-var autoPlayIsOn = false;
-var waitTime = 1;
+var autoPlayIsOn = true;
+var waitTime = 0.05;
 var wait = 0;
 
 // Send these to the canvas variable in the Engine
@@ -436,9 +436,17 @@ Board.prototype.handleInput = function(move) {
 				// If the skip provides no legal moves, the game is over
 				else {
 					turn = (turn === 'white') ? 'black' : 'white';
-					var winner = (player1.score > player2.score) ?
+					var winner = '';
+					var mess = '';
+					// In case of tie
+					if (player1.score === player2.score) {
+						mess = 'Game over, tie game!!';
+					}
+					else {
+						winner = (player1.score > player2.score) ?
 						player1.color : player2.color;
-					var mess = 'Game over, ' + winner + ' wins!';
+						mess = 'Game over, ' + winner + ' wins!';
+					}
 					overlay.popup(mess);
 					isGameOver = true;
 					isReady = false;
