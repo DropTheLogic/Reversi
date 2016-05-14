@@ -337,9 +337,10 @@ Board.prototype.update = function(dt) {
 		}
 	}
 
-	// The main board will handle input only when the user clicks
+	// The main board will handle input only when the user clicks and isn't
+	// a bot's turn
 	else if ((!player1.isABot && turn === player1.color) ||
-		(!player1.isABot && turn === player1.color)){
+		(!player2.isABot && turn === player2.color)){
 		this.handleInput(moveRequest);
 	}
 
