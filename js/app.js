@@ -318,7 +318,9 @@ Board.prototype.update = function(dt) {
 
 	// If one or more players are bots, take turns automatically
 	else if (isReady && !isGameOver &&
-		!overlay.isVisible && wait > waitTime && (player1.isABot && (turn === player1.color) || player2.isABot && (turn === player2.color))) {
+		!overlay.isVisible && wait > waitTime &&
+		(player1.isABot && (turn === player1.color) ||
+		player2.isABot && (turn === player2.color))) {
 
 		// Lookup empty spaces
 		this.findLegalSpaces();
@@ -336,7 +338,8 @@ Board.prototype.update = function(dt) {
 	}
 
 	// The main board will handle input only when the user clicks
-	else {
+	else if ((!player1.isABot && turn === player1.color) ||
+		(!player1.isABot && turn === player1.color)){
 		this.handleInput(moveRequest);
 	}
 
