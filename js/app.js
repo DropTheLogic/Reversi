@@ -11,8 +11,7 @@
 var isGameOver = false;
 var isReady = false; // Is user ready for a new game
 var resetRequest = false;
-var autoPlayIsOn = true;
-var waitTime = 0.05;
+var waitTime = 2;
 var wait = 0;
 
 // Send these to the canvas variable in the Engine
@@ -317,9 +316,9 @@ Board.prototype.update = function(dt) {
 		this.handleInput(mouseLoc);
 	}
 
-	// If autoPlayIsOn, take turns automatically
-	else if (autoPlayIsOn && isReady && !isGameOver &&
-		!overlay.isVisible && wait > waitTime) {
+	// If one or more players are bots, take turns automatically
+	else if (isReady && !isGameOver &&
+		!overlay.isVisible && wait > waitTime && (player1.isABot && (turn === player1.color) || player2.isABot && (turn === player2.color))) {
 
 		// Lookup empty spaces
 		this.findLegalSpaces();
@@ -572,6 +571,7 @@ Board.prototype.drawPieces = function(player) {
 var Player = function(name, color) {
 	this.name = name;
 	this.color = color;
+	this.isABot = false;
 	this.sprite = {
 		'img' : 'images/checker.png',
 		'x' : (this.color === 'black') ? 0 : 32,
@@ -846,6 +846,7 @@ function initGame() {
     // Instantiate players
     player1 = new Player('Danny', 'black');
 	player2 = new Player('Lauren', 'white');
+	player2.isABot = true;
 	// Set turn to 0
 	turn = 'black';
     // Make the scoreboard
