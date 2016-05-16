@@ -305,6 +305,41 @@ Board.prototype.findLegalSpaces = function() {
     }
 };
 
+// Returns a move object {x : INT, y : INT} after considering the values of
+// the available moves.
+Board.prototype.getAiMove = function() {
+	var myTurn = (turn === player1.color) ? player1.color : player2.color;
+	var highScore = 0;
+	var highIndex = 0;
+
+	// Create array of available legal moves
+	this.findLegalSpaces();
+
+	// Calculate the amount of positive value added by each move. (Currently,
+	// only search for the amount of positive value created by one move.)
+	for (var index = 0; index < legalSpaces.length; index++) {
+		// Try taking the turn
+		this.takeTurn(legalSpaces[index]);
+		// Count the new score
+		var newScore = 0;
+		for (var i = 0; i < this.rows; i++) {
+			for (var j = 0; j < this.cols; j++) {
+				if (this.spaces[i][j] === myTurn) {
+					newScore++;
+				}
+			}
+		}
+		// Compare new score to high score, update high score if possible
+		if (newScore > highScore) {
+			highScore = newScore;
+			highIndex = index;
+		}
+	}
+
+	// Return move with the highest score
+	return legalSpaces[highIndex];
+};
+
 // Update player's pieces within the board, when detected
 Board.prototype.update = function(dt) {
 
@@ -322,11 +357,8 @@ Board.prototype.update = function(dt) {
 		(player1.isABot && (turn === player1.color) ||
 		player2.isABot && (turn === player2.color))) {
 
-		// Lookup empty spaces
-		this.findLegalSpaces();
-
-		// Randomly take moves, from the available spaces
-		moveRequest = legalSpaces[getRand(0, (legalSpaces.length - 1))];
+		// Get move, from ai calculation
+		moveRequest = this.getAiMove();
 
 		// Send move to be handled
 		this.handleInput(moveRequest);
