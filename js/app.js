@@ -80,12 +80,10 @@ document.addEventListener("mousemove", function (event) {
 	y -= (canvas.offsetTop + space.height);
 
 	// Translate move into whole space numbers on the board
-	if (!isGameOver) {
-		mouseLoc = {
+	mouseLoc = {
 			'x' : Math.floor(x / space.width),
 			'y' : Math.floor(y / space.height)
-		};
-	}
+	};
 }, false);
 
 // Returns true if mouse button is pressed
@@ -108,12 +106,10 @@ document.addEventListener("touchmove", function (event) {
 	y -= (canvas.offsetTop + space.height);
 
 	// Translate move into whole space numbers on the board
-	if (!isGameOver) {
-		mouseLoc = {
+	mouseLoc = {
 			'x' : Math.floor(x / space.width),
 			'y' : Math.floor(y / space.height)
-		};
-	}
+	};
 	mouseDown = true;
 }, false);
 
@@ -399,7 +395,7 @@ Board.prototype.handleInput = function(move) {
 	if (move.x >= 6 &&
 		move.x < 7 &&
 		move.y >= 12 &&
-		move.y < 13 && userClick) {
+		move.y < 13 && userClick && !isGameOver) {
 		allowGhosts = true;
 	}
 
@@ -407,14 +403,14 @@ Board.prototype.handleInput = function(move) {
 	if (move.x >= 7 &&
 		move.x < 8 &&
 		move.y >= 12 &&
-		move.y < 13 && userClick) {
+		move.y < 13 && userClick && !isGameOver) {
 		allowGhosts = false;
 	}
 
 	// Check if user wants to reset game
 	if (move.x >= 0 &&
 		move.x <= 1 &&
-		move.y === 12 && userClick) {
+		move.y === 12 && userClick && (!overlay.isVisible || isGameOver)) {
 		// Reset mouseLoc to prevent infinte loop
 		mouseLoc = {};
 		resetRequest = confirm('End current game and start a new one?');
@@ -450,7 +446,7 @@ Board.prototype.handleInput = function(move) {
 		move.x >= 0 &&
 		move.y < this.rows &&
 		move.y >= 0 &&
-		this.spaces[move.x][move.y] === undefined) {
+		this.spaces[move.x][move.y] === undefined && !isGameOver) {
 
 		// Attempt to take turn from user input.
 		// If takeTurn(move) determines the current move is valid,
@@ -782,14 +778,22 @@ Scoreboard.prototype.printButton = function(label, xPosSpace) {
  * @constructor
  */
 var Overlay = function() {
+	this.buttons = [];
 	this.start();
 	this.isVisible = true;
 };
 
 // Update overlay variables
 Overlay.prototype.update = function(dt) {
-	if (mouseDown) {
+	// Click to start
+	if (mouseDown && isGameOver &&
+		mouseLoc.x >= 2 && mouseLoc.x <= 5 && mouseLoc.y === 7) {
 		isGameOver = false;
+		this.isVisible = false;
+		this.buttons = [];
+	}
+	// Click anywhere to dismiss popup overlays
+	else if (!isGameOver && mouseDown) {
 		this.isVisible = false;
 	}
 };
@@ -815,11 +819,15 @@ Overlay.prototype.start = function() {
 	this.sprite.height = 88;
 
 	// Set title message
-	this.message = 'Click anywhere to play';
-	this.messageX = 32;
-	this.messageY = 250;
-	this.messageFont =  'bold 18px Courier';
-	this.messageStyle = '#4F2E0F';
+	// this.message = 'Click anywhere to play';
+	// this.messageX = 32;
+	// this.messageY = 250;
+	// this.messageFont =  'bold 18px Courier';
+	// this.messageStyle = '#4F2E0F';
+
+	// Set start button
+	var startW = 128
+	this.createButton("Start!", CANVAS_WIDTH / 2 - startW / 2, 260, startW, 24);
 };
 
 // Overlay for a pop-up message, takes string for message
@@ -841,6 +849,18 @@ Overlay.prototype.popup = function(mString) {
 	this.sprite = '';
 
 	overlay.isVisible = true;
+};
+
+// Creates buttons on-demand to use in the overlay
+Overlay.prototype.createButton = function(text, xOrig, yOrig, w, h) {
+	this.buttons.push(
+		{
+			'text' : text,
+			'xOrig' : xOrig,
+			'yOrig' : yOrig,
+			'width' : w,
+			'height' : h
+		});
 };
 
 // Print overlay to canvas
@@ -866,6 +886,44 @@ Overlay.prototype.print = function() {
 		ctx.font = this.messageFont;
 		ctx.textAlign = "center";
 		ctx.fillText(this.message, CANVAS_WIDTH / 2, this.messageY);
+	}
+	// Print buttons, if any
+	if (this.buttons) {
+		for (var i = 0; i < this.buttons.length; i++) {
+			// Draw backing
+			ctx.globalAlpha = 1;
+			// Drop Shadow
+			ctx.fillStyle = '#4F2E0F';
+			ctx.fillRect(
+				this.buttons[i].xOrig + 2,
+				this.buttons[i].yOrig + 2,
+				this.buttons[i].width,
+				this.buttons[i].height
+			);
+			ctx.fillStyle = '#fff';
+			ctx.fillRect(
+				this.buttons[i].xOrig,
+				this.buttons[i].yOrig,
+				this.buttons[i].width,
+				this.buttons[i].height
+			);
+			ctx.strokeStyle = '#4F2E0F';
+			ctx.strokeRect(
+				this.buttons[i].xOrig,
+				this.buttons[i].yOrig,
+				this.buttons[i].width,
+				this.buttons[i].height
+			);
+			// Draw button text
+			ctx.fillStyle = '#4F2E0F';
+			ctx.textAlign = 'center';
+			ctx.font = 'bold 18px Courier';
+			ctx.fillText(
+				this.buttons[i].text,
+				this.buttons[i].xOrig + this.buttons[i].width / 2,
+				this.buttons[i].yOrig + 18
+			);
+		}
 	}
 };
 
