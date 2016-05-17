@@ -311,6 +311,12 @@ Board.prototype.getAiMove = function() {
 	var myTurn = (turn === player1.color) ? player1.color : player2.color;
 	var highScore = 0;
 	var highIndex = 0;
+	var cornerSpaces = [
+		{ x : 0, y : 0 },
+		{ x : 0, y : 7 },
+		{ x : 7, y : 0 },
+		{ x : 7, y : 7 }
+	];
 
 	// Create array of available legal moves
 	this.findLegalSpaces();
@@ -318,6 +324,12 @@ Board.prototype.getAiMove = function() {
 	// Calculate the amount of positive value added by each move. (Currently,
 	// only search for the amount of positive value created by one move.)
 	for (var index = 0; index < legalSpaces.length; index++) {
+		// First, automatically take corner, if available
+		for (var k = 0; k < cornerSpaces.length; k++) {
+			if (legalSpaces[index].x === cornerSpaces[k].x && legalSpaces[index].y === cornerSpaces[k].y) {
+				return legalSpaces[index];
+			}
+		}
 		// Try taking the turn
 		this.takeTurn(legalSpaces[index]);
 		// Count the new score
