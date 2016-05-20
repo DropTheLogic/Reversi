@@ -789,12 +789,16 @@ Overlay.prototype.update = function(dt) {
 			// Create Play again buttons
 			var playW = 128;
 			this.createButton("Play Again?",
-				CANVAS_WIDTH / 2 - startW / 2, 260, playW, 24, 0, true);
+				CANVAS_WIDTH / 2 - playW / 2, 256, playW, 32, 0, true);
 	}
 	// Find if any buttons are pressed
 	for (var i = 0; i < this.buttons.length; i++) {
 		// Press button behaviour
-		if (mouseDown) {
+		if (mouseDown &&
+			mouseLoc.x >= this.buttons[i].xOrig / 32 - 1 &&
+			mouseLoc.x <=
+			(this.buttons[i].xOrig + this.buttons[i].width) / 32 - 2 &&
+			mouseLoc.y === this.buttons[i].yOrig / 32 - 1) {
 			this.buttons[i].offset = 2;
 		}
 		else {
@@ -849,7 +853,7 @@ Overlay.prototype.start = function() {
 
 	// Set start button
 	var startW = 128
-	this.createButton("Start!", CANVAS_WIDTH / 2 - startW / 2, 260, startW, 24, 0, true);
+	this.createButton("Start!", CANVAS_WIDTH / 2 - startW / 2, 256, startW, 32, 0, true);
 };
 
 // Overlay for a pop-up message, takes string for message
@@ -947,7 +951,7 @@ Overlay.prototype.print = function() {
 			ctx.fillText(
 				this.buttons[i].text,
 				this.buttons[i].xOrig + center + this.buttons[i].offset,
-				this.buttons[i].yOrig + 18 + this.buttons[i].offset
+				this.buttons[i].yOrig + 22 + this.buttons[i].offset
 			);
 			}
 		}
