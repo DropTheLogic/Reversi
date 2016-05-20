@@ -439,8 +439,6 @@ Board.prototype.handleInput = function(move) {
 		}
 	}
 
-	userClick = false;
-
 	// Check if move is in bounds and not already taken
 	if (move.x < this.cols &&
 		move.x >= 0 &&
@@ -779,21 +777,45 @@ Scoreboard.prototype.printButton = function(label, xPosSpace) {
  */
 var Overlay = function() {
 	this.buttons = [];
+	this.shadowOffset = 2;
 	this.start();
 	this.isVisible = true;
 };
 
 // Update overlay variables
 Overlay.prototype.update = function(dt) {
-	// Click to start
-	if (mouseDown && isGameOver &&
-		mouseLoc.x >= 2 && mouseLoc.x <= 5 && mouseLoc.y === 7) {
-		isGameOver = false;
-		this.isVisible = false;
-		this.buttons = [];
+	// Update states
+	if (isGameOver && !isReady) {
+			// Create Play again buttons
+			var playW = 128;
+			this.createButton("Play Again?",
+				CANVAS_WIDTH / 2 - startW / 2, 260, playW, 24, 0, true);
 	}
-	// Click anywhere to dismiss popup overlays
-	else if (!isGameOver && mouseDown) {
+	// Find if any buttons are pressed
+	for (var i = 0; i < this.buttons.length; i++) {
+		// Press button behaviour
+		if (mouseDown) {
+			this.buttons[i].offset = 2;
+		}
+		else {
+			this.buttons[i].offset = 0;
+		}
+		// Check if Play button is pressed
+		if (userClick && isGameOver &&
+			mouseLoc.x >= 2 && mouseLoc.x <= 5 && mouseLoc.y === 7) {
+			// If game has ended, send resetRequest to engine
+			if (isGameOver && !isReady) {
+				resetRequest = true;
+			}
+			// Otherwise (at the intro screen) begin game and dismiss overlay
+			isGameOver = false;
+			this.isVisible = false;
+			this.buttons[i].isVisable = false;
+		}
+
+	}
+	// Click anywhere to dismiss other popup overlays
+	if (!isGameOver && mouseDown) {
 		this.isVisible = false;
 	}
 };
@@ -827,7 +849,7 @@ Overlay.prototype.start = function() {
 
 	// Set start button
 	var startW = 128
-	this.createButton("Start!", CANVAS_WIDTH / 2 - startW / 2, 260, startW, 24);
+	this.createButton("Start!", CANVAS_WIDTH / 2 - startW / 2, 260, startW, 24, 0, true);
 };
 
 // Overlay for a pop-up message, takes string for message
@@ -852,14 +874,16 @@ Overlay.prototype.popup = function(mString) {
 };
 
 // Creates buttons on-demand to use in the overlay
-Overlay.prototype.createButton = function(text, xOrig, yOrig, w, h) {
+Overlay.prototype.createButton = function(text, xOrig, yOrig, w, h, o, visable) {
 	this.buttons.push(
 		{
 			'text' : text,
 			'xOrig' : xOrig,
 			'yOrig' : yOrig,
 			'width' : w,
-			'height' : h
+			'height' : h,
+			'offset' : o,
+			'isVisable' : visable
 		});
 };
 
@@ -890,27 +914,28 @@ Overlay.prototype.print = function() {
 	// Print buttons, if any
 	if (this.buttons) {
 		for (var i = 0; i < this.buttons.length; i++) {
+			if (this.buttons[i].isVisable) {
 			// Draw backing
 			ctx.globalAlpha = 1;
 			// Drop Shadow
 			ctx.fillStyle = '#4F2E0F';
 			ctx.fillRect(
-				this.buttons[i].xOrig + 2,
-				this.buttons[i].yOrig + 2,
+				this.buttons[i].xOrig + this.shadowOffset,
+				this.buttons[i].yOrig + this.shadowOffset,
 				this.buttons[i].width,
 				this.buttons[i].height
 			);
 			ctx.fillStyle = '#fff';
 			ctx.fillRect(
-				this.buttons[i].xOrig,
-				this.buttons[i].yOrig,
+				this.buttons[i].xOrig + this.buttons[i].offset,
+				this.buttons[i].yOrig + this.buttons[i].offset,
 				this.buttons[i].width,
 				this.buttons[i].height
 			);
 			ctx.strokeStyle = '#4F2E0F';
 			ctx.strokeRect(
-				this.buttons[i].xOrig,
-				this.buttons[i].yOrig,
+				this.buttons[i].xOrig + this.buttons[i].offset,
+				this.buttons[i].yOrig + this.buttons[i].offset,
 				this.buttons[i].width,
 				this.buttons[i].height
 			);
@@ -918,11 +943,13 @@ Overlay.prototype.print = function() {
 			ctx.fillStyle = '#4F2E0F';
 			ctx.textAlign = 'center';
 			ctx.font = 'bold 18px Courier';
+			var center = this.buttons[i].width / 2;
 			ctx.fillText(
 				this.buttons[i].text,
-				this.buttons[i].xOrig + this.buttons[i].width / 2,
-				this.buttons[i].yOrig + 18
+				this.buttons[i].xOrig + center + this.buttons[i].offset,
+				this.buttons[i].yOrig + 18 + this.buttons[i].offset
 			);
+			}
 		}
 	}
 };

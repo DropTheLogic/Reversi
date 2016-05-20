@@ -91,6 +91,7 @@ var Engine = (function(global) {
 		//win.requestAnimationFrame(main);
         // First, check if game is over, or reset request, then
         // kick the loop to the gameOverScreen
+        userClick = false;
         if (resetRequest) {
             win.requestAnimationFrame(init);
         }
