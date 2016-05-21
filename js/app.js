@@ -859,10 +859,10 @@ Overlay.prototype.start = function() {
 // Overlay for a pop-up message, takes string for message
 Overlay.prototype.popup = function(mString) {
 	// Set overlay size
-	this.width = CANVAS_WIDTH - 64;
-	this.height = 256;
-	this.xOrig = (CANVAS_WIDTH - this.width) / 2;
-	this.yOrig = 32;
+	this.width = CANVAS_WIDTH - 32;
+	this.height = 288;
+	this.xOrig = 16;
+	this.yOrig = 16;
 
 	// Set message and placement
 	this.message = mString;
