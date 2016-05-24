@@ -305,47 +305,70 @@ Board.prototype.findLegalSpaces = function() {
 // the available moves.
 Board.prototype.getAiMove = function() {
 	var myTurn = (turn === player1.color) ? player1.color : player2.color;
-	var highScore = 0;
-	var highIndex = 0;
-	var cornerSpaces = [
-		{ x : 0, y : 0 },
-		{ x : 0, y : 7 },
-		{ x : 7, y : 0 },
-		{ x : 7, y : 7 }
-	];
+	var highestValue = 0;
+	var highestIndex = 0;
 
 	// Create array of available legal moves
 	this.findLegalSpaces();
 
 	// Calculate the amount of positive value added by each move. (Currently,
 	// only search for the amount of positive value created by one move.)
+	// One flipped piece = 1
+	// An edge piece = 4
+	// A corner piece = 8 (implicitely found)
 	for (var index = 0; index < legalSpaces.length; index++) {
-		// First, automatically take corner, if available
-		for (var k = 0; k < cornerSpaces.length; k++) {
-			if (legalSpaces[index].x === cornerSpaces[k].x && legalSpaces[index].y === cornerSpaces[k].y) {
-				return legalSpaces[index];
-			}
-		}
-		// Try taking the turn
-		this.takeTurn(legalSpaces[index]);
-		// Count the new score
-		var newScore = 0;
+		// Track the value added if this space is played
+		var value = 0;
+		// Track the amount of own pieces currently on the board
+		var currentScore =
+			(turn === player1.color) ? player1.score : player2.score;
+		// Create backup of current board
+		var currentState = [8];
+		init2DArray(currentState);
+		copyArray(this.spaces, currentState);
+
+		// Create move request from list of legal moves
+		moveRequest = legalSpaces[index];
+
+		// Take the turn
+		this.takeTurn(moveRequest);
+
+		// Cycle through spaces on the board and tally values
 		for (var i = 0; i < this.rows; i++) {
 			for (var j = 0; j < this.cols; j++) {
+				// If my piece is found on the board, calculate it's value
 				if (this.spaces[i][j] === myTurn) {
-					newScore++;
+					// If piece lies on the upper or bottom border
+					if (i === 0 || i === 7) {
+						value += 4;
+					}
+					// If piece lies on the left or right border
+					if (j === 0 || j === 7) {
+						value += 4;
+					}
+					// If piece is anywhere else
+					else {
+						value++;
+					}
 				}
 			}
 		}
-		// Compare new score to high score, update high score if possible
-		if (newScore > highScore) {
-			highScore = newScore;
-			highIndex = index;
+
+		// Subtract current number of pieces from value to show value added
+		value -= currentScore;
+
+		// Compare new value to highest value, update highest value if needed
+		if (value > highestValue) {
+			highestValue = value;
+			highestIndex = index;
 		}
+
+		// Revert board back to original state
+		copyArray(currentState, this.spaces);
 	}
 
-	// Return move with the highest score
-	return legalSpaces[highIndex];
+	// Return move with the highest value
+	return legalSpaces[highestIndex];
 };
 
 // Update player's pieces within the board, when detected
@@ -364,7 +387,6 @@ Board.prototype.update = function(dt) {
 		!overlay.isVisible && wait > waitTime &&
 		(player1.isABot && (turn === player1.color) ||
 		player2.isABot && (turn === player2.color))) {
-
 		// Get move, from ai calculation
 		moveRequest = this.getAiMove();
 
