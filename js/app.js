@@ -44,10 +44,6 @@ var userClick = false;
 // Object to hold history of all moves. Each element is a 2D array
 var movesHistory = {};
 
-// An array of objects with format: { x : Int, y : Int }
-// for each legal space on the gameboard
-var legalSpaces = [];
-
 function init2DArray(a) {
 	for (var row = 0; row < 8; row++) {
 		a[row] = new Array(8);
@@ -277,10 +273,10 @@ Board.prototype.legalMoveAvailable = function() {
 	return false;
 };
 
-// Update the empty spaces in the gameboard
+// Returns array of legal moves for current turn, { x : INT, y : INT } format
 Board.prototype.findLegalSpaces = function() {
-	// Reset array
-	legalSpaces = [];
+	// Array holding legal moves for the current player
+	var legalSpaces = [];
 
 	// Scan board for empty spaces
 	if (!this.isAGhost) {
@@ -299,23 +295,30 @@ Board.prototype.findLegalSpaces = function() {
             }
         }
     }
+
+    return legalSpaces;
 };
 
-// Returns a move object {x : INT, y : INT} after considering the values of
-// the available moves.
-Board.prototype.getAiMove = function() {
+/**
+ * Returns a move object {x : INT, y : INT} after considering the values of
+ * the available moves.
+ * @param {integer} moves - the number of moves to look ahead
+ */
+Board.prototype.getAiMove = function(moves) {
 	var myTurn = (turn === player1.color) ? player1.color : player2.color;
 	var highestValue = 0;
 	var highestIndex = 0;
 
 	// Create array of available legal moves
-	this.findLegalSpaces();
+	var legalSpaces = this.findLegalSpaces();
 
-	// Calculate the amount of positive value added by each move. (Currently,
-	// only search for the amount of positive value created by one move.)
+	// Calculate the amount of positive value added by each move.
 	// One flipped piece = 1
 	// An edge piece = 4
 	// A corner piece = 8 (implicitely found)
+	if (moves > 0) {
+		console.log("**************** " + turn + "'s turn ****************");
+	}
 	for (var index = 0; index < legalSpaces.length; index++) {
 		// Track the value added if this space is played
 		var value = 0;
@@ -332,6 +335,29 @@ Board.prototype.getAiMove = function() {
 
 		// Take the turn
 		this.takeTurn(moveRequest);
+
+		// Take virtual turns according to how many moves ahead to look
+		// How far to allow recursive vision
+		var movesToLookAhead = moves;
+		if (movesToLookAhead > 0) {
+			console.log("On " + turn + "'s turn, move is (" +
+				legalSpaces[index].x + ", " + legalSpaces[index].y + ")");
+			//console.log("calculating opponent's values...");
+
+			// Advance turn to other player
+			turn = (turn === 'white') ? 'black' : 'white';
+
+			// Check that opponent has a turn
+			if (this.legalMoveAvailable()) {
+				// Find ai move for opponent
+				moveRequest = this.getAiMove(--movesToLookAhead);
+				// Take opponents turn
+				this.takeTurn(moveRequest);
+			}
+
+			// Revert turn
+			turn = (turn === 'white') ? 'black' : 'white';
+		}
 
 		// Cycle through spaces on the board and tally values
 		for (var i = 0; i < this.rows; i++) {
@@ -366,6 +392,9 @@ Board.prototype.getAiMove = function() {
 		// Revert board back to original state
 		copyArray(currentState, this.spaces);
 	}
+	console.log("Best move for " + turn + " is (" +
+		legalSpaces[highestIndex].x + ", " +
+		legalSpaces[highestIndex].y + "), with a value of " + highestValue);
 
 	// Return move with the highest value
 	return legalSpaces[highestIndex];
@@ -388,7 +417,7 @@ Board.prototype.update = function(dt) {
 		(player1.isABot && (turn === player1.color) ||
 		player2.isABot && (turn === player2.color))) {
 		// Get move, from ai calculation
-		moveRequest = this.getAiMove();
+		moveRequest = this.getAiMove(1);
 
 		// Send move to be handled
 		this.handleInput(moveRequest);
