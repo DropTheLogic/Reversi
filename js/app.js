@@ -323,8 +323,8 @@ Board.prototype.getAiMove = function(moves) {
 		// Track the value added if this space is played
 		var value = 0;
 		// Track the amount of own pieces currently on the board
-		var currentScore =
-			(turn === player1.color) ? player1.score : player2.score;
+		//var currentScore =
+		//	(turn === player1.color) ? player1.score : player2.score;
 		// Create backup of current board
 		var currentState = [8];
 		init2DArray(currentState);
@@ -340,9 +340,8 @@ Board.prototype.getAiMove = function(moves) {
 		// How far to allow recursive vision
 		var movesToLookAhead = moves;
 		if (movesToLookAhead > 0) {
-			console.log("On " + turn + "'s turn, move is (" +
-				legalSpaces[index].x + ", " + legalSpaces[index].y + ")");
-			//console.log("calculating opponent's values...");
+			//console.log("On " + turn + "'s turn, proposed move is (" +
+			//	legalSpaces[index].x + ", " + legalSpaces[index].y + ")");
 
 			// Advance turn to other player
 			turn = (turn === 'white') ? 'black' : 'white';
@@ -364,13 +363,18 @@ Board.prototype.getAiMove = function(moves) {
 			for (var j = 0; j < this.cols; j++) {
 				// If my piece is found on the board, calculate it's value
 				if (this.spaces[i][j] === myTurn) {
+					// If piece lies on a corner
+					if ((i === 0 && j === 0) || (i === 0 && j === 7) ||
+						(i === 7 && j === 0) || (i === 7 && j === 7)) {
+						value += 40;
+					}
 					// If piece lies on the upper or bottom border
 					if (i === 0 || i === 7) {
-						value += 4;
+						value += 2;
 					}
 					// If piece lies on the left or right border
 					if (j === 0 || j === 7) {
-						value += 4;
+						value += 2;
 					}
 					// If piece is anywhere else
 					else {
@@ -380,8 +384,10 @@ Board.prototype.getAiMove = function(moves) {
 			}
 		}
 
+		//console.log("value for " + turn + ": " + value);
+
 		// Subtract current number of pieces from value to show value added
-		value -= currentScore;
+		//value -= currentScore;
 
 		// Compare new value to highest value, update highest value if needed
 		if (value > highestValue) {
@@ -417,7 +423,7 @@ Board.prototype.update = function(dt) {
 		(player1.isABot && (turn === player1.color) ||
 		player2.isABot && (turn === player2.color))) {
 		// Get move, from ai calculation
-		moveRequest = this.getAiMove(1);
+		moveRequest = this.getAiMove(2);
 
 		// Send move to be handled
 		this.handleInput(moveRequest);
