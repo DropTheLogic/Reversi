@@ -464,6 +464,38 @@ Board.prototype.handleInput = function(move) {
 		allowGhosts = false;
 	}
 
+	// Check if user wants player 1 to be a CPU player
+	if (move.x >= 3 &&
+		move.x < 4 &&
+		move.y >= 14 &&
+		move.y < 15 && userClick && !isGameOver) {
+		player1.isABot = true;
+	}
+
+	// Check if user wants player 1 to be a human player
+	if (move.x >= 4 &&
+		move.x < 5 &&
+		move.y >= 14 &&
+		move.y < 15 && userClick && !isGameOver) {
+		player1.isABot = false;
+	}
+
+	// Check if user wants player 2 to be a CPU player
+	if (move.x >= 6 &&
+		move.x < 7 &&
+		move.y >= 14 &&
+		move.y < 15 && userClick && !isGameOver) {
+		player2.isABot = true;
+	}
+
+	// Check if user wants player 2 to be a human player
+	if (move.x >= 7 &&
+		move.x < 8 &&
+		move.y >= 14 &&
+		move.y < 15 && userClick && !isGameOver) {
+		player2.isABot = false;
+	}
+
 	// Check if user wants to reset game
 	if (move.x >= 0 &&
 		move.x <= 1 &&
@@ -760,13 +792,19 @@ Scoreboard.prototype.render = function() {
 	this.printScore(player2, 192, 320);
 
 	// Show ghost moves option
-	this.showGhostToggle();
+	this.printToggle('Ghost Moves', allowGhosts, space.width * 7, space.height * 13);
 
 	// Print reset button
 	this.printButton('Reset Game', 1);
 
 	// Print undo button
 	this.printButton('Undo', 4);
+
+	// Print player1 CPU button
+	this.printToggle('Player1 CPU', player1.isABot, space.width * 4, space.height * 15);
+
+	// Print player2 CPU button
+	this.printToggle('Player2 CPU', player2.isABot, space.width * 7, space.height * 15);
 };
 
 /**
@@ -789,17 +827,25 @@ Scoreboard.prototype.printScore = function(player, xPos, yPos) {
     ctx.fillText(scoreString, xPos + 40, (yPos + 24));
 };
 
-// Prints ghost moves toggle button
-Scoreboard.prototype.showGhostToggle = function() {
+/**
+ * Prints Toggle Button with a label describing what it does
+ * @param {string} label - the text to display under toggle button
+ * @param {boolean} condition - boolean condition to toggle on and off
+ * @param {integer} xPos - an integer corresponding to the space on the
+ * board underwhich to left-align the button
+ * @param {inteder} yPos - an integer corresponding to eht space on the
+ * board where to top-align the the toggle button
+ */
+Scoreboard.prototype.printToggle = function(label, condition, xPos, yPos) {
 	ctx.font = 'bold 12px Courier';
 	ctx.fillStyle = '#000'; // For black text
-	ctx.fillText('Ghost Moves', 216, ghostOnY + 38);
+	ctx.fillText(label, xPos - 6, yPos + 38);
 
 	// Display toggle sprite from sprite sheet
 	var toggleSprite = Resources.get('images/switch.png');
 	// Select position of appropriate sprite from sheet
-	var onY = (allowGhosts) ? 0 : 70;
-	ctx.drawImage(toggleSprite, 0, onY, 128, 64, ghostOnX, ghostOnY, 64, 32);
+	var onY = (condition) ? 0 : 70;
+	ctx.drawImage(toggleSprite, 0, onY, 128, 64, xPos, yPos, 64, 32);
 };
 
 /**
@@ -1040,6 +1086,7 @@ function initGame() {
     // Instantiate players
     player1 = new Player('Danny', 'black');
 	player2 = new Player('Lauren', 'white');
+	player1.isABot = false;
 	player2.isABot = true;
 	// Set turn to 0
 	turn = 'black';
