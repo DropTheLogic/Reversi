@@ -845,7 +845,7 @@ Scoreboard.prototype.printToggle = function(label, condition, xPos, yPos) {
 	var toggleSprite = Resources.get('images/switch.png');
 	// Select position of appropriate sprite from sheet
 	var onY = (condition) ? 0 : 70;
-	ctx.drawImage(toggleSprite, 0, onY, 128, 64, xPos, yPos, 64, 32);
+	ctx.drawImage(toggleSprite, 0, onY, 127, 54, xPos, yPos, 64, 27);
 };
 
 /**
