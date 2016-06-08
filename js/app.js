@@ -230,6 +230,7 @@ function getRand(min, max) {
 var Board = function(isAGhost) {
 	this.rows = 8;
 	this.cols = 8;
+	this.indent = ''; // For debugging, allows to view recursive move scores
 	this.spaces = new Array(this.rows);
 	this.isAGhost = isAGhost;
     this.hasLegalMoves = true;
@@ -306,7 +307,7 @@ Board.prototype.findLegalSpaces = function() {
  */
 Board.prototype.getAiMove = function(moves) {
 	var myTurn = (turn === player1.color) ? player1.color : player2.color;
-	var highestValue = 0;
+	var highestValue = -999999;
 	var highestIndex = 0;
 
 	// Create array of available legal moves
@@ -317,7 +318,7 @@ Board.prototype.getAiMove = function(moves) {
 	// An edge piece = 4
 	// A corner piece = 8 (implicitely found)
 	if (moves > 0) {
-		console.log("**************** " + turn + "'s turn ****************");
+		console.log(this.indent + "**************** " + turn + "'s turn ****************");
 	}
 	for (var index = 0; index < legalSpaces.length; index++) {
 		// Track the value added if this space is played
@@ -336,12 +337,15 @@ Board.prototype.getAiMove = function(moves) {
 		// Take the turn
 		this.takeTurn(moveRequest);
 
+		//console.log(this.indent + "On " + turn + "'s turn, proposed move is (" +
+		//		legalSpaces[index].x + ", " + legalSpaces[index].y + ")");
+
 		// Take virtual turns according to how many moves ahead to look
 		// How far to allow recursive vision
 		var movesToLookAhead = moves;
 		if (movesToLookAhead > 0) {
-			//console.log("On " + turn + "'s turn, proposed move is (" +
-			//	legalSpaces[index].x + ", " + legalSpaces[index].y + ")");
+			// Create indent character, for debugging
+			this.indent += '>';
 
 			// Advance turn to other player
 			turn = (turn === 'white') ? 'black' : 'white';
@@ -356,35 +360,40 @@ Board.prototype.getAiMove = function(moves) {
 
 			// Revert turn
 			turn = (turn === 'white') ? 'black' : 'white';
+
+			// Adjust indent, for console debugging
+			var iL = this.indent.length - 1;
+			this.indent = this.indent.substring(0, iL);
 		}
 
 		// Cycle through spaces on the board and tally values
 		for (var i = 0; i < this.rows; i++) {
 			for (var j = 0; j < this.cols; j++) {
-				// If my piece is found on the board, calculate it's value
-				if (this.spaces[i][j] === myTurn) {
+				// If a piece is found on the board, calculate it's value
+				if (this.spaces[i][j] != undefined) {
 					// If piece lies on a corner
 					if ((i === 0 && j === 0) || (i === 0 && j === 7) ||
 						(i === 7 && j === 0) || (i === 7 && j === 7)) {
-						value += 40;
+						(this.spaces[i][j] === myTurn) ?
+							value += 16 : value -= 16;
 					}
 					// If piece lies on the upper or bottom border
 					if (i === 0 || i === 7) {
-						value += 2;
+						(this.spaces[i][j] === myTurn) ? value += 2 : value -= 2;
 					}
 					// If piece lies on the left or right border
 					if (j === 0 || j === 7) {
-						value += 2;
+						(this.spaces[i][j] === myTurn) ? value += 2 : value -= 2;
 					}
 					// If piece is anywhere else
 					else {
-						value++;
+						(this.spaces[i][j] === myTurn) ? value++ : value--;
 					}
 				}
 			}
 		}
 
-		//console.log("value for " + turn + ": " + value);
+		//console.log(this.indent + "value for " + turn + ": " + value);
 
 		// Subtract current number of pieces from value to show value added
 		//value -= currentScore;
@@ -398,7 +407,7 @@ Board.prototype.getAiMove = function(moves) {
 		// Revert board back to original state
 		copyArray(currentState, this.spaces);
 	}
-	console.log("Best move for " + turn + " is (" +
+	console.log(this.indent + "Best move for " + turn + " is (" +
 		legalSpaces[highestIndex].x + ", " +
 		legalSpaces[highestIndex].y + "), with a value of " + highestValue);
 
