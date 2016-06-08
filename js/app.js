@@ -375,15 +375,25 @@ Board.prototype.getAiMove = function(moves) {
 					if ((i === 0 && j === 0) || (i === 0 && j === 7) ||
 						(i === 7 && j === 0) || (i === 7 && j === 7)) {
 						(this.spaces[i][j] === myTurn) ?
-							value += 16 : value -= 16;
+							value += 64 : value -= 64;
+					}
+					// If piece lies adjacent to a corner (negatively valued)
+					if ((i === 0 && j === 1) || (i === 1 && j === 1) ||
+						(i === 1 && j === 0) || (i === 0 && j === 6) ||
+						(i === 1 && j === 6) || (i === 1 && j === 7) ||
+						(i === 6 && j === 0) || (i === 6 && j === 1) ||
+						(i === 7 && j === 1) || (i === 6 && j === 7) ||
+						(i === 6 && j === 6) || (i === 7 && j === 6)) {
+						(this.spaces[i][j] === myTurn) ?
+							value -= 24 : value += 24;
 					}
 					// If piece lies on the upper or bottom border
 					if (i === 0 || i === 7) {
-						(this.spaces[i][j] === myTurn) ? value += 2 : value -= 2;
+						(this.spaces[i][j] === myTurn) ? value += 4 : value -= 4;
 					}
 					// If piece lies on the left or right border
 					if (j === 0 || j === 7) {
-						(this.spaces[i][j] === myTurn) ? value += 2 : value -= 2;
+						(this.spaces[i][j] === myTurn) ? value += 4 : value -= 4;
 					}
 					// If piece is anywhere else
 					else {
