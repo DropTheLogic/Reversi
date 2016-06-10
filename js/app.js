@@ -314,9 +314,11 @@ Board.prototype.getAiMove = function(moves) {
 	var legalSpaces = this.findLegalSpaces();
 
 	// Calculate the amount of positive value added by each move.
-	// One flipped piece = 1
-	// An edge piece = 4
-	// A corner piece = 8 (implicitely found)
+	var vCorner = 64;
+	var vCornerAd = -24;
+	var vEdge = 4;
+	var vSpace = 1;
+
 	if (moves > 0) {
 		console.log(this.indent + "**************** " + turn + "'s turn ****************");
 	}
@@ -375,7 +377,7 @@ Board.prototype.getAiMove = function(moves) {
 					if ((i === 0 && j === 0) || (i === 0 && j === 7) ||
 						(i === 7 && j === 0) || (i === 7 && j === 7)) {
 						(this.spaces[i][j] === myTurn) ?
-							value += 64 : value -= 64;
+							value += vCorner : value -= vCorner;
 					}
 					// If piece lies adjacent to a corner (negatively valued)
 					if ((i === 0 && j === 1) || (i === 1 && j === 1) ||
@@ -385,19 +387,22 @@ Board.prototype.getAiMove = function(moves) {
 						(i === 7 && j === 1) || (i === 6 && j === 7) ||
 						(i === 6 && j === 6) || (i === 7 && j === 6)) {
 						(this.spaces[i][j] === myTurn) ?
-							value -= 24 : value += 24;
+							value += vCornerAd : value -= vCornerAd;
 					}
 					// If piece lies on the upper or bottom border
 					if (i === 0 || i === 7) {
-						(this.spaces[i][j] === myTurn) ? value += 4 : value -= 4;
+						(this.spaces[i][j] === myTurn) ?
+						value += vEdge : value -= vEdge;
 					}
 					// If piece lies on the left or right border
 					if (j === 0 || j === 7) {
-						(this.spaces[i][j] === myTurn) ? value += 4 : value -= 4;
+						(this.spaces[i][j] === myTurn) ?
+						value += vEdge : value -= vEdge;
 					}
 					// If piece is anywhere else
 					else {
-						(this.spaces[i][j] === myTurn) ? value++ : value--;
+						(this.spaces[i][j] === myTurn) ?
+						value += vSpace : value -= vSpace;
 					}
 				}
 			}
