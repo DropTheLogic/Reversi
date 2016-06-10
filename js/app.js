@@ -313,7 +313,12 @@ Board.prototype.getAiMove = function(moves) {
 	// Create array of available legal moves
 	var legalSpaces = this.findLegalSpaces();
 
-	// Calculate the amount of positive value added by each move.
+	// Create array to record values of each legal move. Each element in the
+	// array will be an array itself, [value, index], containing the value of
+	// the move and then index of the move in the legalSpaces array
+	var spaceValues = [];
+
+	// Calculate the amount of value added by each move.
 	var vCorner = 64;
 	var vCornerAd = -24;
 	var vEdge = 4;
@@ -413,21 +418,32 @@ Board.prototype.getAiMove = function(moves) {
 		// Subtract current number of pieces from value to show value added
 		//value -= currentScore;
 
-		// Compare new value to highest value, update highest value if needed
-		if (value > highestValue) {
-			highestValue = value;
-			highestIndex = index;
-		}
+		// Add value to array
+		spaceValues.push([value, index]);
 
 		// Revert board back to original state
 		copyArray(currentState, this.spaces);
 	}
-	console.log(this.indent + "Best move for " + turn + " is (" +
-		legalSpaces[highestIndex].x + ", " +
-		legalSpaces[highestIndex].y + "), with a value of " + highestValue);
+
+	// Sort moves by increasing value (bubble sort, looking at a 2D array)
+	for (var i = 0; i < spaceValues.length; i++) {
+		for (var j = 0; j < (spaceValues.length - i - 1); j++) {
+			// Compare scores
+			if (spaceValues[j][0] > spaceValues[j + 1][0]) {
+				// Swap places
+				var tempArr = spaceValues[j];
+				spaceValues[j] = spaceValues[j + 1];
+				spaceValues[j + 1] = tempArr;
+			}
+		}
+	}
+
+	// console.log(this.indent + "Best move for " + turn + " is (" +
+	// 	legalSpaces[highestIndex].x + ", " +
+	// 	legalSpaces[highestIndex].y + "), with a value of " + highestValue);
 
 	// Return move with the highest value
-	return legalSpaces[highestIndex];
+	return legalSpaces[spaceValues[spaceValues.length - 1][1]];
 };
 
 // Update player's pieces within the board, when detected
