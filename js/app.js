@@ -26,6 +26,15 @@ var space = {
 	'width' : 32
 };
 
+/**
+ * Returns random integer
+ * @param {integer} min - inclusive
+ * @param {integer} max - exclusive
+ */
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
 // Hold turn (by player piece color)
 var turn;
 
@@ -438,12 +447,48 @@ Board.prototype.getAiMove = function(moves) {
 		}
 	}
 
-	// console.log(this.indent + "Best move for " + turn + " is (" +
-	// 	legalSpaces[highestIndex].x + ", " +
-	// 	legalSpaces[highestIndex].y + "), with a value of " + highestValue);
+	console.log(this.indent + 'Moves:');
+	for (var i = 0; i < spaceValues.length; i++) {
+		console.log(this.indent + spaceValues[i]);
+	}
 
-	// Return move with the highest value
-	return legalSpaces[spaceValues[spaceValues.length - 1][1]];
+	// Pick move to play
+	// Find disctinct values, and store indeces of each one in array
+	var distIndeces = [];
+	distIndeces.push(0);
+	for (var i = 1; i < spaceValues.length; i++) {
+		// Check if current value is different from previous one
+		if (spaceValues[i][0] != spaceValues[i - 1][0]) {
+			// Add index to collection
+			distIndeces.push(i);
+		}
+	}
+
+	// Pick highest value move
+	// Start by picking the final/highest value in the spaceValues array
+	var decision = spaceValues[spaceValues.length - 1];
+	// If more than one legal move exists, pick randomly from highest
+	// equivalently valued moves, if multiple exist
+	if (spaceValues.length > 1) {
+		// Set minimum index, by finding index of the first occurrance of
+		// highest value move (which is the final element in the
+		// distIndeces array)
+		var min = distIndeces[distIndeces.length - 1];
+		// Max index will be the length of the spaceValues array (which,
+		// in the getRandomInt function, is exclusive)
+		var max = spaceValues.length;
+		console.log(this.indent + 'Randomly finding move between ' +
+			spaceValues[min] + ' and ' + spaceValues[max - 1]);
+		// Find random index
+		var randomIndex = getRandomInt(min, max);
+		// Set decision to move of randomIndex in spaceValues array
+		decision = spaceValues[randomIndex];
+	}
+
+	console.log(this.indent + 'Picking ' + decision + ' to play');
+
+	// Return move to be played
+	return legalSpaces[decision[1]];
 };
 
 // Update player's pieces within the board, when detected
