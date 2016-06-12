@@ -43,7 +43,7 @@ var moveRequest = {};
 var mouseLoc = {};
 var mouseDown = false;
 
-// Allows visable pieces previewing move
+// Allows visible pieces previewing move
 var allowGhosts = true;
 // Size and placement of on/off toggle
 var ghostOnX = space.width * 7;
@@ -245,9 +245,9 @@ var Board = function(isAGhost) {
     this.hasLegalMoves = true;
 };
 
-// Inititalize board matrix
+// Initialize board matrix
 Board.prototype.initBoard = function() {
-	// Inititalize matrix size
+	// Initialize matrix size
 	for (var row = 0; row < this.rows; row++) {
 		this.spaces[row] = new Array(this.cols);
 	}
@@ -453,14 +453,14 @@ Board.prototype.getAiMove = function(moves) {
 	}
 
 	// Pick move to play
-	// Find disctinct values, and store indeces of each one in array
-	var distIndeces = [];
-	distIndeces.push(0);
+	// Find distinct values, and store indexes of each one in array
+	var distIndexes = [];
+	distIndexes.push(0);
 	for (var i = 1; i < spaceValues.length; i++) {
 		// Check if current value is different from previous one
 		if (spaceValues[i][0] != spaceValues[i - 1][0]) {
 			// Add index to collection
-			distIndeces.push(i);
+			distIndexes.push(i);
 		}
 	}
 
@@ -470,10 +470,10 @@ Board.prototype.getAiMove = function(moves) {
 	// If more than one legal move exists, pick randomly from highest
 	// equivalently valued moves, if multiple exist
 	if (spaceValues.length > 1) {
-		// Set minimum index, by finding index of the first occurrance of
+		// Set minimum index, by finding index of the first occurrence of
 		// highest value move (which is the final element in the
-		// distIndeces array)
-		var min = distIndeces[distIndeces.length - 1];
+		// distIndexes array)
+		var min = distIndexes[distIndexes.length - 1];
 		// Max index will be the length of the spaceValues array (which,
 		// in the getRandomInt function, is exclusive)
 		var max = spaceValues.length;
@@ -585,7 +585,7 @@ Board.prototype.handleInput = function(move) {
 	if (move.x >= 0 &&
 		move.x <= 1 &&
 		move.y === 12 && userClick && (!overlay.isVisible || isGameOver)) {
-		// Reset mouseLoc to prevent infinte loop
+		// Reset mouseLoc to prevent infinite loop
 		mouseLoc = {};
 		resetRequest = confirm('End current game and start a new one?');
 	}
@@ -806,7 +806,7 @@ Player.prototype.handleInput = function(move, board) {
 };
 
 /**
- * Scoreboad Class, which will display scores and other UI information
+ * Scoreboard Class, which will display scores and other UI information
  * @constructor
  */
 var Scoreboard = function() {
@@ -917,8 +917,8 @@ Scoreboard.prototype.printScore = function(player, xPos, yPos) {
  * @param {string} label - the text to display under toggle button
  * @param {boolean} condition - boolean condition to toggle on and off
  * @param {integer} xPos - an integer corresponding to the space on the
- * board underwhich to left-align the button
- * @param {inteder} yPos - an integer corresponding to eht space on the
+ * board under-which to left-align the button
+ * @param {integer} yPos - an integer corresponding to the space on the
  * board where to top-align the the toggle button
  */
 Scoreboard.prototype.printToggle = function(label, condition, xPos, yPos) {
@@ -937,7 +937,7 @@ Scoreboard.prototype.printToggle = function(label, condition, xPos, yPos) {
  * Prints Button with a label describing what it does
  * @param {string} label - the text to display under button
  * @param {integer} xPosSpace - an integer corresponding to the space on the
- * board underwhich to left-align the button
+ * board under-which to left-align the button
  */
 Scoreboard.prototype.printButton = function(label, xPosSpace) {
 	// Display label
@@ -959,8 +959,8 @@ Scoreboard.prototype.printButton = function(label, xPosSpace) {
 };
 
 /**
- * Overlay class, used to print entire pages or screens overtop of the
- * gamaeboard. Use to display messages or for end of game or start screens.
+ * Overlay class, used to print entire pages or screens over-top of the
+ * gameboard. Use to display messages or for end of game or start screens.
  * @constructor
  */
 var Overlay = function() {
@@ -981,7 +981,7 @@ Overlay.prototype.update = function(dt) {
 	}
 	// Find if any buttons are pressed
 	for (var i = 0; i < this.buttons.length; i++) {
-		// Press button behaviour
+		// Press button behavior
 		if (mouseDown &&
 			mouseLoc.x >= this.buttons[i].xOrig / 32 - 1 &&
 			mouseLoc.x <=
@@ -1006,7 +1006,7 @@ Overlay.prototype.update = function(dt) {
 		}
 
 	}
-	// Click anywhere to dismiss other popup overlays
+	// Click anywhere to dismiss other pop-up overlays
 	if (!isGameOver && mouseDown) {
 		this.isVisible = false;
 	}
