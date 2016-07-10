@@ -47,7 +47,7 @@ var mouseDown = false;
 var allowGhosts = true;
 // Size and placement of on/off toggle
 var ghostOnX = space.width * 7;
-var ghostOnY = space.height * 13;
+var ghostOnY = space.height * 12;
 var userClick = false;
 
 // Object to hold history of all moves. Each element is a 2D array
@@ -536,55 +536,55 @@ Board.prototype.handleInput = function(move) {
 	// Check if user requests ghost moves on
 	if (move.x >= 6 &&
 		move.x < 7 &&
-		move.y >= 12 &&
-		move.y < 13 && userClick && !isGameOver) {
+		move.y >= 11 &&
+		move.y < 12 && userClick && !isGameOver) {
 		allowGhosts = true;
 	}
 
 	// Check if user requests ghost moves off
 	if (move.x >= 7 &&
 		move.x < 8 &&
-		move.y >= 12 &&
-		move.y < 13 && userClick && !isGameOver) {
+		move.y >= 11 &&
+		move.y < 12 && userClick && !isGameOver) {
 		allowGhosts = false;
 	}
 
 	// Check if user wants player 1 to be a CPU player
 	if (move.x >= 3 &&
 		move.x < 4 &&
-		move.y >= 14 &&
-		move.y < 15 && userClick && !isGameOver) {
+		move.y >= 13 &&
+		move.y < 14 && userClick && !isGameOver) {
 		player1.isABot = true;
 	}
 
 	// Check if user wants player 1 to be a human player
 	if (move.x >= 4 &&
 		move.x < 5 &&
-		move.y >= 14 &&
-		move.y < 15 && userClick && !isGameOver) {
+		move.y >= 13 &&
+		move.y < 14 && userClick && !isGameOver) {
 		player1.isABot = false;
 	}
 
 	// Check if user wants player 2 to be a CPU player
 	if (move.x >= 6 &&
 		move.x < 7 &&
-		move.y >= 14 &&
-		move.y < 15 && userClick && !isGameOver) {
+		move.y >= 13 &&
+		move.y < 14 && userClick && !isGameOver) {
 		player2.isABot = true;
 	}
 
 	// Check if user wants player 2 to be a human player
 	if (move.x >= 7 &&
 		move.x < 8 &&
-		move.y >= 14 &&
-		move.y < 15 && userClick && !isGameOver) {
+		move.y >= 13 &&
+		move.y < 14 && userClick && !isGameOver) {
 		player2.isABot = false;
 	}
 
 	// Check if user wants to reset game
 	if (move.x >= 0 &&
 		move.x <= 1 &&
-		move.y === 12 && userClick && (!overlay.isVisible || isGameOver)) {
+		move.y === 11 && userClick && (!overlay.isVisible || isGameOver)) {
 		// Reset mouseLoc to prevent infinite loop
 		mouseLoc = {};
 		resetRequest = confirm('End current game and start a new one?');
@@ -593,7 +593,7 @@ Board.prototype.handleInput = function(move) {
 	// Check if user wants to undo move
 	if (move.x >= 3 &&
 		move.x <= 4 &&
-		move.y === 12 && userClick) {
+		move.y === 11 && userClick) {
 		var undo = true; //confirm('Undo last move?');
 		// Find length of moves history Object
 		var oLength = Object.keys(movesHistory).length;
@@ -877,7 +877,7 @@ Scoreboard.prototype.render = function() {
 	this.printScore(player2, 192, 320);
 
 	// Show ghost moves option
-	this.printToggle('Ghost Moves', allowGhosts, space.width * 7, space.height * 13);
+	this.printToggle('Ghost Moves', allowGhosts, space.width * 7, space.height * 12);
 
 	// Print reset button
 	this.printButton('Reset Game', 1);
@@ -886,10 +886,10 @@ Scoreboard.prototype.render = function() {
 	this.printButton('Undo', 4);
 
 	// Print player1 CPU button
-	this.printToggle('Player1 CPU', player1.isABot, space.width * 4, space.height * 15);
+	this.printToggle('Player1 CPU', player1.isABot, space.width * 4, space.height * 14);
 
 	// Print player2 CPU button
-	this.printToggle('Player2 CPU', player2.isABot, space.width * 7, space.height * 15);
+	this.printToggle('Player2 CPU', player2.isABot, space.width * 7, space.height * 14);
 };
 
 /**
@@ -950,7 +950,7 @@ Scoreboard.prototype.printButton = function(label, xPosSpace) {
 	// Display button
 	// Display image (up or down) based on if user click's on
 	//  button's location on the board
-	var buttonSprite = Resources.get((mouseDown && mouseLoc.y === 12 &&
+	var buttonSprite = Resources.get((mouseDown && mouseLoc.y === 11 &&
 									  (mouseLoc.x >= xPosSpace - 1 &&
 									  mouseLoc.x <= xPosSpace)) ?
 									 'images/buttonPress.png' :
