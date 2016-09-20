@@ -532,84 +532,56 @@ Board.prototype.update = function(dt) {
 
 // Account for user input on the board
 Board.prototype.handleInput = function(move) {
-	// Check if user is clicking an option
-	// Check if user requests ghost moves on
-	if (move.x >= 6 &&
-		move.x < 7 &&
-		move.y >= 11 &&
-		move.y < 12 && userClick && !isGameOver) {
-		allowGhosts = true;
-	}
+	// Object describing scoreboard button locations and actions
+	var buttonLocs = {
+		'ghostMovesOn' : {'x' : 6, 'y' : 11,
+			'action' : function() {allowGhosts = true;}},
+		'ghostMovesOff' : {'x' : 7, 'y' : 11,
+			'action' : function() {allowGhosts = false;}},
+		'player1CPU' : {'x' : 3, 'y' : 13,
+			'action' : function() {player1.isABot = true;}},
+		'player1Human' : {'x' : 4, 'y' : 13,
+			'action' : function() {player1.isABot = false;}},
+		'player2CPU' : {'x' : 6, 'y' : 13,
+			'action' : function() {player2.isABot = true;}},
+		'player2Human' : {'x' : 7, 'y' : 13,
+			'action' : function() {player2.isABot = false;}},
+		'reset' : {'name' : 'reset', 'x' : 0, 'y' : 11,
+			'action' : function() {
+				mouseLoc = {};
+				resetRequest = confirm('End current game and start a new one?');
+			}},
+		'undo' : {'name' : 'undo', 'x' : 3, 'y' : 11,
+			'action' : function() {
+				var undo = true; //confirm('Undo last move?');
+				// Find length of moves history Object
+				var oLength = Object.keys(movesHistory).length;
+				// Make sure move isn't first move
+				if (undo && oLength > 1) {
+					// Copy previous move onto gameboard
+					copyArray(movesHistory[oLength - 2], board.spaces);
+					// Delete last move from the history
+					delete movesHistory[oLength - 1];
+					// Update history object length
+					oLength = Object.keys(movesHistory).length;
+					// Revert turn
+					turn = (turn === 'white') ? 'black' : 'white';
+					if (isGameOver) {
+						isGameOver = false;
+					}
+				}
+			}}
+	};
 
-	// Check if user requests ghost moves off
-	if (move.x >= 7 &&
-		move.x < 8 &&
-		move.y >= 11 &&
-		move.y < 12 && userClick && !isGameOver) {
-		allowGhosts = false;
-	}
-
-	// Check if user wants player 1 to be a CPU player
-	if (move.x >= 3 &&
-		move.x < 4 &&
-		move.y >= 13 &&
-		move.y < 14 && userClick && !isGameOver) {
-		player1.isABot = true;
-	}
-
-	// Check if user wants player 1 to be a human player
-	if (move.x >= 4 &&
-		move.x < 5 &&
-		move.y >= 13 &&
-		move.y < 14 && userClick && !isGameOver) {
-		player1.isABot = false;
-	}
-
-	// Check if user wants player 2 to be a CPU player
-	if (move.x >= 6 &&
-		move.x < 7 &&
-		move.y >= 13 &&
-		move.y < 14 && userClick && !isGameOver) {
-		player2.isABot = true;
-	}
-
-	// Check if user wants player 2 to be a human player
-	if (move.x >= 7 &&
-		move.x < 8 &&
-		move.y >= 13 &&
-		move.y < 14 && userClick && !isGameOver) {
-		player2.isABot = false;
-	}
-
-	// Check if user wants to reset game
-	if (move.x >= 0 &&
-		move.x <= 1 &&
-		move.y === 11 && userClick && (!overlay.isVisible || isGameOver)) {
-		// Reset mouseLoc to prevent infinite loop
-		mouseLoc = {};
-		resetRequest = confirm('End current game and start a new one?');
-	}
-
-	// Check if user wants to undo move
-	if (move.x >= 3 &&
-		move.x <= 4 &&
-		move.y === 11 && userClick) {
-		var undo = true; //confirm('Undo last move?');
-		// Find length of moves history Object
-		var oLength = Object.keys(movesHistory).length;
-		// Make sure move isn't first move
-		if (undo && oLength > 1) {
-			// Copy previous move onto gameboard
-			copyArray(movesHistory[oLength - 2], board.spaces);
-			// Delete last move from the history
-			delete movesHistory[oLength - 1];
-			// Update history object length
-			oLength = Object.keys(movesHistory).length;
-			// Revert turn
-			turn = (turn === 'white') ? 'black' : 'white';
-			if (isGameOver) {
-				isGameOver = false;
-			}
+	// Check if user is clicking a button on the scoreboard
+	for (var key in buttonLocs) {
+		var button = buttonLocs[key];
+		if (userClick && !overlay.isVisible) {
+			if (((button.name === 'reset' || button.name === 'undo') &&
+				move.x >= button.x && move.x <= button.x + 1 && move.y === button.y) ||
+				(move.x >= button.x && move.x < button.x + 1 &&
+				move.y >= button.y && move.y < button.y + 1 && !isGameOver))
+				button.action();
 		}
 	}
 
