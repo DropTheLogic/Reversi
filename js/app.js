@@ -548,6 +548,17 @@ Board.prototype.handleInput = function(move) {
 			'action' : function() {player2.isABot = false;}},
 		'reset' : {'name' : 'reset', 'x' : 0, 'y' : 11,
 			'action' : function() {
+				// var buttonWidth = 160;
+				// overlay.isVisible = true;
+				// overlay.sprite = '';
+				// overlay.createButton("Reset Game?",
+				// 	CANVAS_WIDTH / 2 - buttonWidth / 2, 256, buttonWidth, 32, 0, true,
+				// 	function() {
+				// 		console.log('beginning reset button action');
+				// 		mouseLoc = {};
+				// 		this.isVisible = false;
+				// 		resetRequest = true;
+				// 	});
 				mouseLoc = {};
 				resetRequest = confirm('End current game and start a new one?');
 			}},
@@ -949,7 +960,9 @@ Overlay.prototype.update = function(dt) {
 			// Create Play again buttons
 			var playW = 128;
 			this.createButton("Play Again?",
-				CANVAS_WIDTH / 2 - playW / 2, 256, playW, 32, 0, true);
+				CANVAS_WIDTH / 2 - playW / 2, 256, playW, 32, 0, true, function() {
+					console.log("beginning play again button action");
+				});
 	}
 	// Find if any buttons are pressed
 	for (var i = 0; i < this.buttons.length; i++) {
@@ -960,6 +973,9 @@ Overlay.prototype.update = function(dt) {
 			(this.buttons[i].xOrig + this.buttons[i].width) / 32 - 2 &&
 			mouseLoc.y === this.buttons[i].yOrig / 32 - 1) {
 			this.buttons[i].offset = 2;
+			// if (this.buttons[i].action) {
+			// 	this.buttons[i].action();
+			// }
 		}
 		else {
 			this.buttons[i].offset = 0;
@@ -1013,7 +1029,11 @@ Overlay.prototype.start = function() {
 
 	// Set start button
 	var startW = 128
-	this.createButton("Start!", CANVAS_WIDTH / 2 - startW / 2, 256, startW, 32, 0, true);
+	this.createButton("Start!", CANVAS_WIDTH / 2 - startW / 2, 256, startW, 32, 0, true,
+		function() {
+			console.log("beginning start button action");
+		}
+	);
 };
 
 // Overlay for a pop-up message, takes string for message
@@ -1038,7 +1058,7 @@ Overlay.prototype.popup = function(mString) {
 };
 
 // Creates buttons on-demand to use in the overlay
-Overlay.prototype.createButton = function(text, xOrig, yOrig, w, h, o, visable) {
+Overlay.prototype.createButton = function(text, xOrig, yOrig, w, h, o, visible, action) {
 	this.buttons.push(
 		{
 			'text' : text,
@@ -1047,7 +1067,8 @@ Overlay.prototype.createButton = function(text, xOrig, yOrig, w, h, o, visable) 
 			'width' : w,
 			'height' : h,
 			'offset' : o,
-			'isVisable' : visable
+			'isVisable' : visible,
+			'action' : action
 		});
 };
 
