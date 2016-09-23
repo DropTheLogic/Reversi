@@ -1057,7 +1057,17 @@ Overlay.prototype.popup = function(mString) {
 	overlay.isVisible = true;
 };
 
-// Creates buttons on-demand to use in the overlay
+/**
+ * Creates buttons to use in the overlay, pushes to buttons array
+ * @param {string} text - the text to display on button
+ * @param {integer} xOrig - x origin coordinate for button, left aligned
+ * @param {integer} yOrig - y origin coordinate for button, top aligned
+ * @param {integer} w - width of button, in pixels
+ * @param {integer} h - height of button, in pixels
+ * @param {integer} o - number of pixels to offset button once pressed
+ * @param {boolean} visible - whether to display button
+ * @param {function} action - function to be called upon button press
+ */
 Overlay.prototype.createButton = function(text, xOrig, yOrig, w, h, o, visible, action) {
 	this.buttons.push(
 		{
