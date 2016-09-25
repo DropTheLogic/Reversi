@@ -11,7 +11,7 @@
 var isGameOver = false;
 var isReady = false; // Is user ready for a new game
 var resetRequest = false;
-var waitTime = 2;
+var waitTime = .25;
 var wait = 0;
 
 // Send these to the canvas variable in the Engine
@@ -958,10 +958,13 @@ Overlay.prototype.update = function(dt) {
 	// Update states
 	if (isGameOver && !isReady) {
 			// Create Play again buttons
+			// TODO: Stop making new buttons every frame!!
 			var playW = 128;
 			this.createButton("Play Again?",
 				CANVAS_WIDTH / 2 - playW / 2, 256, playW, 32, 0, true, function() {
-					console.log("beginning play again button action");
+					if (isGameOver && !isReady) {
+						resetRequest = true;
+					}
 				});
 	}
 	// Find if any buttons are pressed
@@ -973,26 +976,21 @@ Overlay.prototype.update = function(dt) {
 			(this.buttons[i].xOrig + this.buttons[i].width) / 32 - 2 &&
 			mouseLoc.y === this.buttons[i].yOrig / 32 - 1) {
 			this.buttons[i].offset = 2;
-			// if (this.buttons[i].action) {
-			// 	this.buttons[i].action();
-			// }
 		}
+		// Button depress behaviour
 		else {
+			// Reset button to raised location
 			this.buttons[i].offset = 0;
-		}
-		// Check if Play button is pressed
-		if (userClick && isGameOver &&
-			mouseLoc.x >= 2 && mouseLoc.x <= 5 && mouseLoc.y === 7) {
-			// If game has ended, send resetRequest to engine
-			if (isGameOver && !isReady) {
-				resetRequest = true;
+			// If button is "clicked" (mouse released over it), then take action
+			if (mouseLoc.x >= this.buttons[i].xOrig / 32 - 1 &&
+				mouseLoc.x <=
+				(this.buttons[i].xOrig + this.buttons[i].width) / 32 - 2 &&
+				mouseLoc.y === this.buttons[i].yOrig / 32 - 1) {
+				if (this.isVisible && this.buttons[i].action && userClick) {
+					this.buttons[i].action();
+				}
 			}
-			// Otherwise (at the intro screen) begin game and dismiss overlay
-			isGameOver = false;
-			this.isVisible = false;
-			this.buttons[i].isVisable = false;
 		}
-
 	}
 	// Click anywhere to dismiss other pop-up overlays
 	if (!isGameOver && mouseDown) {
@@ -1031,9 +1029,12 @@ Overlay.prototype.start = function() {
 	var startW = 128
 	this.createButton("Start!", CANVAS_WIDTH / 2 - startW / 2, 256, startW, 32, 0, true,
 		function() {
-			console.log("beginning start button action");
-		}
-	);
+			// Begin game and dismiss overlay
+			isGameOver = false;
+			overlay.isVisible = false;
+			// Remove this button
+			overlay.buttons.splice(overlay.buttons.indexOf(this), 1);
+		});
 };
 
 // Overlay for a pop-up message, takes string for message
