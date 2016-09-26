@@ -548,19 +548,16 @@ Board.prototype.handleInput = function(move) {
 			'action' : function() {player2.isABot = false;}},
 		'reset' : {'name' : 'reset', 'x' : 0, 'y' : 11,
 			'action' : function() {
-				// var buttonWidth = 160;
-				// overlay.isVisible = true;
-				// overlay.sprite = '';
-				// overlay.createButton("Reset Game?",
-				// 	CANVAS_WIDTH / 2 - buttonWidth / 2, 256, buttonWidth, 32, 0, true,
-				// 	function() {
-				// 		console.log('beginning reset button action');
-				// 		mouseLoc = {};
-				// 		this.isVisible = false;
-				// 		resetRequest = true;
-				// 	});
-				mouseLoc = {};
-				resetRequest = confirm('End current game and start a new one?');
+				var buttonWidth = 160;
+				overlay.isVisible = true;
+				overlay.sprite = '';
+				overlay.createButton("Reset Game?",
+					CANVAS_WIDTH / 2 - buttonWidth / 2, 256, buttonWidth, 32, 0, true,
+					function() {
+						mouseLoc = {};
+						this.isVisible = false;
+						resetRequest = true;
+					});
 			}},
 		'undo' : {'name' : 'undo', 'x' : 3, 'y' : 11,
 			'action' : function() {
@@ -951,6 +948,7 @@ var Overlay = function() {
 	this.shadowOffset = 2;
 	this.start();
 	this.isVisible = true;
+	this.clickToDismiss = false;
 };
 
 // Update overlay variables
@@ -993,7 +991,7 @@ Overlay.prototype.update = function(dt) {
 		}
 	}
 	// Click anywhere to dismiss other pop-up overlays
-	if (!isGameOver && mouseDown) {
+	if (this.clickToDismiss && !isGameOver && mouseDown) {
 		this.isVisible = false;
 	}
 };
@@ -1055,6 +1053,7 @@ Overlay.prototype.popup = function(mString) {
 	// Eliminate image
 	this.sprite = '';
 
+	this.clickToDismiss = true;
 	overlay.isVisible = true;
 };
 
