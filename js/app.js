@@ -548,15 +548,25 @@ Board.prototype.handleInput = function(move) {
 			'action' : function() {player2.isABot = false;}},
 		'reset' : {'name' : 'reset', 'x' : 0, 'y' : 11,
 			'action' : function() {
-				var buttonWidth = 160;
+				var buttonWidth = space.width * 2;
 				overlay.isVisible = true;
 				overlay.sprite = '';
-				overlay.createButton("Reset Game?",
-					CANVAS_WIDTH / 2 - buttonWidth / 2, 256, buttonWidth, 32, 0, true,
+				overlay.message = "Really restart new game?";
+				overlay.messageX = 32;
+				overlay.messageY = 128 + 96;
+				overlay.messageFont =  'bold 18px Courier';
+				overlay.messageStyle = '#4F2E0F';
+				overlay.createButton("Yes",
+					space.width * 2, 256, buttonWidth, 32, 0, true,
 					function() {
 						mouseLoc = {};
-						this.isVisible = false;
 						resetRequest = true;
+					});
+				overlay.createButton("No",
+					space.width * 6, 256, buttonWidth, 32, 0, true,
+					function() {
+						mouseLoc = {};
+						overlay.isVisible = false;
 					});
 			}},
 		'undo' : {'name' : 'undo', 'x' : 3, 'y' : 11,
@@ -598,7 +608,7 @@ Board.prototype.handleInput = function(move) {
 		move.x >= 0 &&
 		move.y < this.rows &&
 		move.y >= 0 &&
-		this.spaces[move.x][move.y] === undefined && !isGameOver) {
+		this.spaces[move.x][move.y] === undefined && !isGameOver && !overlay.isVisible) {
 
 		// Attempt to take turn from user input.
 		// If takeTurn(move) determines the current move is valid,
