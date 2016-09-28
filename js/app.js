@@ -316,6 +316,8 @@ Board.prototype.findLegalSpaces = function() {
  */
 Board.prototype.getAiMove = function(moves) {
 	var myTurn = (turn === player1.color) ? player1.color : player2.color;
+	var difficulty = 
+		(turn === player1.color) ? player1.difficulty : player2.difficulty;
 	var highestValue = -999999;
 	var highestIndex = 0;
 
@@ -328,10 +330,36 @@ Board.prototype.getAiMove = function(moves) {
 	var spaceValues = [];
 
 	// Calculate the amount of value added by each move.
-	var vCorner = 64;
-	var vCornerAd = -24;
-	var vEdge = 4;
-	var vSpace = 1;
+	var vCorner;
+	var vCornerAd;
+	var vEdge;
+	var vSpace;
+	switch(difficulty) {
+		case 1 : 
+			vCorner = 44;
+			vCornerAd = -12;
+			vEdge = 5;
+			vSpace = 2;
+			break;
+		case 2 :
+			vCorner = 64;
+			vCornerAd = -24;
+			vEdge = 4;
+			vSpace = 1;
+			break;
+		case 3 :
+			vCorner = 90;
+			vCornerAd = -20;
+			vEdge = 5;
+			vSpace = 1;
+			break;
+		default :
+			vCorner = 40;
+			vCornerAd = -2;
+			vEdge = 5;
+			vSpace = 2;
+			break;
+	};
 
 	if (moves > 0) {
 		console.log(this.indent + "**************** " + turn + "'s turn ****************");
@@ -474,6 +502,12 @@ Board.prototype.getAiMove = function(moves) {
 		// highest value move (which is the final element in the
 		// distIndexes array)
 		var min = distIndexes[distIndexes.length - 1];
+		// If difficulty is set low, amd there are at least three tiers
+		// move-scores, choose between best or second best instead of
+		// always picking the best move
+		if (difficulty < 2 && distIndexes.length > 3) {
+			min = distIndexes[distIndexes.length - 2]
+		}
 		// Max index will be the length of the spaceValues array (which,
 		// in the getRandomInt function, is exclusive)
 		var max = spaceValues.length;
@@ -485,6 +519,7 @@ Board.prototype.getAiMove = function(moves) {
 		decision = spaceValues[randomIndex];
 	}
 
+	console.log('Difficulty is set to ' + difficulty);
 	console.log(this.indent + 'Picking ' + decision + ' to play');
 
 	// Return move to be played
@@ -508,7 +543,15 @@ Board.prototype.update = function(dt) {
 		(player1.isABot && (turn === player1.color) ||
 		player2.isABot && (turn === player2.color))) {
 		// Get move, from ai calculation
-		moveRequest = this.getAiMove(2);
+		var player = (turn === player1.color) ? player1 : player2;
+		var movesAhead = 1;
+		switch(player.difficulty) {
+			case 1: movesAhead = 0; break;
+			case 2: movesAhead = 1; break;
+			case 3: movesAhead = 2; break;
+			default : movesAhead = 1;
+		};
+		moveRequest = this.getAiMove(movesAhead);
 
 		// Send move to be handled
 		this.handleInput(moveRequest);
@@ -778,6 +821,7 @@ var Player = function(name, color) {
 	this.name = name;
 	this.color = color;
 	this.isABot = false;
+	this.difficulty = 1;
 	this.sprite = {
 		'img' : 'images/checker.png',
 		'x' : (this.color === 'black') ? 0 : 32,
