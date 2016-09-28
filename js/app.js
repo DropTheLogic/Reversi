@@ -316,7 +316,7 @@ Board.prototype.findLegalSpaces = function() {
  */
 Board.prototype.getAiMove = function(moves) {
 	var myTurn = (turn === player1.color) ? player1.color : player2.color;
-	var difficulty = 
+	var difficulty =
 		(turn === player1.color) ? player1.difficulty : player2.difficulty;
 	var highestValue = -999999;
 	var highestIndex = 0;
@@ -335,7 +335,7 @@ Board.prototype.getAiMove = function(moves) {
 	var vEdge;
 	var vSpace;
 	switch(difficulty) {
-		case 1 : 
+		case 1 :
 			vCorner = 44;
 			vCornerAd = -12;
 			vEdge = 5;

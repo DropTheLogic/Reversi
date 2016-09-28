@@ -251,6 +251,48 @@ var Engine = (function(global) {
         	}
         }
 
+        // Border for overlay, during full screen overlay
+        if (overlay.isVisible && overlay.height > 300) {
+            for (row = 0; row < 17; row++) {
+                for (col = 0; col < 10; col++) {
+                    var draw = false;
+                    // Top
+                    if (row === 0) {
+                        draw = true;
+                        sprite = (col === 0) ? sheetB.borderTopLeft :
+                        (col < 9 ?
+                            sheetB.borderTop : sheetB.borderTopRight);
+                    }
+                    // Left Side
+                    else if (col === 0) {
+                        draw = true;
+                        sprite = (row === 16) ?
+                            sheetB.borderBotLeft : sheetB.borderLeft;
+                    }
+                    // // Right Side
+                    else if (col === 9) {
+                        draw = true;
+                        sprite = (row === 16) ?
+                            sheetB.borderBotRight : sheetB.borderRight;
+                    }
+                    // Bottom
+                    else if (row === 16) {
+                        draw = true;
+                        sprite = sheetB.borderBottom;
+                    }
+                if (draw) {
+                    ctx.drawImage(
+                        Resources.get(wood), sprite.x, sprite.y,
+                        space.height, space.width,
+                        col * space.height,
+                        row === 16 ? (row * space.width - 24) : row * space.width,
+                        space.height, space.width);
+                    }
+                }
+
+            }
+        }
+
         // Render Scoreboard
         ctx.globalAlpha = 1;
         score.render();
