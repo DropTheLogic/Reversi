@@ -354,7 +354,11 @@ var Engine = (function(global) {
 		'images/button.png',
 		'images/buttonPress.png',
 		'images/woodOrig.png',
-        'images/title.png'
+        'images/title.png',
+        'images/LED_off.png',
+        'images/LED_y.png',
+        'images/LED_r.png',
+        'images/LED_g.png'
     ]);
     Resources.onReady(init);
 

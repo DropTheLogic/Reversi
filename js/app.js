@@ -581,14 +581,26 @@ Board.prototype.handleInput = function(move) {
 			'action' : function() {allowGhosts = true;}},
 		'ghostMovesOff' : {'x' : 7, 'y' : 11,
 			'action' : function() {allowGhosts = false;}},
-		'player1CPU' : {'x' : 3, 'y' : 13,
+		'player1CPU' : {'x' : 1, 'y' : 13,
 			'action' : function() {player1.isABot = true;}},
-		'player1Human' : {'x' : 4, 'y' : 13,
+		'player1Human' : {'x' : 2, 'y' : 13,
 			'action' : function() {player1.isABot = false;}},
 		'player2CPU' : {'x' : 6, 'y' : 13,
 			'action' : function() {player2.isABot = true;}},
 		'player2Human' : {'x' : 7, 'y' : 13,
 			'action' : function() {player2.isABot = false;}},
+		'p1Easy' : {x : 0, y : 14,
+			'action' : function() {player1.difficulty = 1}},
+		'p1Reg' : {x : 1, y : 14,
+			'action' : function() {player1.difficulty = 2}},
+		'p1Hard' : {x : 2, y : 14,
+			'action' : function() {player1.difficulty = 3}},
+		'p2Easy' : {x : 5, y : 14,
+			'action' : function() {player2.difficulty = 1}},
+		'p2Reg' : {x : 6, y : 14,
+			'action' : function() {player2.difficulty = 2}},
+		'p2Hard' : {x : 7, y : 14,
+			'action' : function() {player2.difficulty = 3}},
 		'reset' : {'name' : 'reset', 'x' : 0, 'y' : 11,
 			'action' : function() {
 				var buttonWidth = space.width * 2;
@@ -920,10 +932,14 @@ Scoreboard.prototype.render = function() {
 	this.printButton('Undo', 4);
 
 	// Print player1 CPU button
-	this.printToggle('Player1 CPU', player1.isABot, space.width * 4, space.height * 14);
+	this.printToggle('P1 CPU', player1.isABot, space.width * 2, space.height * 14);
 
 	// Print player2 CPU button
-	this.printToggle('Player2 CPU', player2.isABot, space.width * 7, space.height * 14);
+	this.printToggle('P2 CPU', player2.isABot, space.width * 7, space.height * 14);
+
+	// Print difficulty LED / buttons
+	this.printLEDs(player1);
+	this.printLEDs(player2);
 };
 
 /**
@@ -958,7 +974,17 @@ Scoreboard.prototype.printScore = function(player, xPos, yPos) {
 Scoreboard.prototype.printToggle = function(label, condition, xPos, yPos) {
 	ctx.font = 'bold 12px Courier';
 	ctx.fillStyle = '#000'; // For black text
-	ctx.fillText(label, xPos - 6, yPos + 38);
+	// CPU text should appear to the side, rather than below
+	var CPUloc = label.indexOf('CPU');
+	if (CPUloc >= 0) {
+		var label1 = label.slice(0, CPUloc);
+		var label2 = label.slice(CPUloc, label.length);
+		ctx.fillText(label1, xPos - 28, yPos + 10);
+		ctx.fillText(label2, xPos - 28, yPos + 22);
+	}
+	else {
+		ctx.fillText(label, xPos - 6, yPos + 38);
+	}
 
 	// Display toggle sprite from sprite sheet
 	var toggleSprite = Resources.get('images/switch.png');
@@ -991,6 +1017,38 @@ Scoreboard.prototype.printButton = function(label, xPosSpace) {
 									 'images/button.png');
 	ctx.drawImage(buttonSprite, space.width * xPosSpace, ghostOnY, 64, 26);
 };
+
+/**
+ * Prints 3 LED lights per player, to display and change current AI difficulty
+ * @param {object} player - object holds color and difficulty parameters
+ */
+Scoreboard.prototype.printLEDs = function(player) {
+	// Display label
+	ctx.font = 'bold 12px Courier';
+	ctx.fillStyle = '#000';
+	ctx.textAlign = 'left';
+	var labelAlign =
+		(player.color === 'black') ? 4 + space.width : 4 + space.width * 6;
+	ctx.fillText('Difficulty:', labelAlign, 488);
+
+	var w = 16;
+	var x = (player.color === 'black') ? (w / 2) : space.width * 5 + (w / 2);
+
+	// Depending on current difficulty, display an "off" LED or colored one
+	for (var i = 1, led; i <= 3; i++) {
+		if (player.difficulty === 1 && player.difficulty === i) {
+			led = Resources.get('images/LED_g.png'); // Green Light
+		}
+		else if (player.difficulty === 2 && player.difficulty === i) {
+			led = Resources.get('images/LED_y.png'); // Yellow Light
+		}
+		else if (player.difficulty === 3 && player.difficulty === i) {
+			led = Resources.get('images/LED_r.png'); // Red Light
+		}
+		else led = Resources.get('images/LED_off.png'); // Light Off
+		ctx.drawImage(led, x += space.width, 490, w, w);
+	}
+}
 
 /**
  * Overlay class, used to print entire pages or screens over-top of the
