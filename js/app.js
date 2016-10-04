@@ -1187,11 +1187,8 @@ Overlay.prototype.print = function() {
 	// Print image, if any
 	if (this.sprite) {
 		ctx.drawImage(
-			this.sprite,
-			(CANVAS_WIDTH - this.sprite.width) / 2,
-			this.yOrig + 32,
-			this.sprite.width,
-			this.sprite.height);
+			this.sprite, (CANVAS_WIDTH - this.sprite.width) / 2,
+			this.yOrig + 32, this.sprite.width, this.sprite.height);
 	}
 	// Print Message, if any
 	if (this.message) {
@@ -1203,41 +1200,29 @@ Overlay.prototype.print = function() {
 	// Print buttons, if any
 	if (this.buttons) {
 		for (var i = 0; i < this.buttons.length; i++) {
-			if (this.buttons[i].isVisable) {
-			// Draw backing
-			ctx.globalAlpha = 1;
-			// Drop Shadow
-			ctx.fillStyle = '#4F2E0F';
-			ctx.fillRect(
-				this.buttons[i].xOrig + this.shadowOffset,
-				this.buttons[i].yOrig + this.shadowOffset,
-				this.buttons[i].width,
-				this.buttons[i].height
-			);
-			ctx.fillStyle = '#fff';
-			ctx.fillRect(
-				this.buttons[i].xOrig + this.buttons[i].offset,
-				this.buttons[i].yOrig + this.buttons[i].offset,
-				this.buttons[i].width,
-				this.buttons[i].height
-			);
-			ctx.strokeStyle = '#4F2E0F';
-			ctx.strokeRect(
-				this.buttons[i].xOrig + this.buttons[i].offset,
-				this.buttons[i].yOrig + this.buttons[i].offset,
-				this.buttons[i].width,
-				this.buttons[i].height
-			);
-			// Draw button text
-			ctx.fillStyle = '#4F2E0F';
-			ctx.textAlign = 'center';
-			ctx.font = 'bold 18px Courier';
-			var center = this.buttons[i].width / 2;
-			ctx.fillText(
-				this.buttons[i].text,
-				this.buttons[i].xOrig + center + this.buttons[i].offset,
-				this.buttons[i].yOrig + 22 + this.buttons[i].offset
-			);
+			var b = this.buttons[i];
+			if (b.isVisable) {
+				// Draw backing
+				ctx.globalAlpha = 1;
+				// Drop Shadow
+				ctx.fillStyle = '#4F2E0F';
+				ctx.fillRect(
+					b.xOrig + this.shadowOffset, b.yOrig + this.shadowOffset,
+					b.width, b.height);
+				// Main button fill
+				ctx.fillStyle = '#fff';
+				ctx.fillRect(
+					b.xOrig + b.offset, b.yOrig + b.offset, b.width, b.height);
+				ctx.strokeStyle = '#4F2E0F';
+				ctx.strokeRect(
+					b.xOrig + b.offset, b.yOrig + b.offset, b.width, b.height);
+				// Draw button text
+				ctx.fillStyle = '#4F2E0F';
+				ctx.textAlign = 'center';
+				ctx.font = 'bold 18px Courier';
+				var center = b.width / 2;
+				ctx.fillText(
+					b.text, b.xOrig + center + b.offset, b.yOrig + 22 + b.offset);
 			}
 		}
 	}
