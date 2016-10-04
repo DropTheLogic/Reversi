@@ -329,36 +329,45 @@ Board.prototype.getAiMove = function(moves) {
 	// the move and then index of the move in the legalSpaces array
 	var spaceValues = [];
 
-	// Calculate the amount of value added by each move.
-	var vCorner;
-	var vCornerAd;
-	var vEdge;
-	var vSpace;
-	switch(difficulty) {
-		case 1 :
-			vCorner = 44;
-			vCornerAd = -12;
-			vEdge = 5;
-			vSpace = 2;
-			break;
-		case 2 :
-			vCorner = 64;
-			vCornerAd = -24;
-			vEdge = 4;
-			vSpace = 1;
-			break;
-		case 3 :
-			vCorner = 90;
-			vCornerAd = -20;
-			vEdge = 5;
-			vSpace = 1;
-			break;
-		default :
-			vCorner = 40;
-			vCornerAd = -2;
-			vEdge = 5;
-			vSpace = 2;
-			break;
+	/**
+	 * Diagram of value zones in the board:
+	 * Each zone represents a unique value on the board
+	 * _________________
+	 * |Z|C|A|B|B|A|C|Z|
+	 * |C|X|Y|V|V|Y|X|C|
+	 * |A|Y|D|E|E|D|Y|A|
+	 * |B|V|E|F|F|E|V|B|
+	 * |B|V|E|F|F|E|V|B|
+	 * |A|Y|D|E|E|D|Y|B|
+	 * |C|X|Y|V|V|Y|X|C|
+	 * |Z|C|A|B|B|A|C|Z|
+	 *
+	 */
+
+	 // 2D Array that names the value zones for each space on the board
+	 var vMatrix = [
+		['z', 'c', 'a', 'b', 'b', 'a', 'c', 'z'],
+		['c', 'x', 'y', 'v', 'v', 'y', 'x', 'c'],
+		['a', 'y', 'd', 'e', 'e', 'd', 'y', 'a'],
+		['b', 'v', 'e', 'f', 'f', 'e', 'v', 'b'],
+		['b', 'v', 'e', 'f', 'f', 'e', 'v', 'b'],
+		['a', 'y', 'd', 'e', 'e', 'd', 'y', 'a'],
+		['c', 'x', 'y', 'v', 'v', 'y', 'x', 'c'],
+		['z', 'c', 'a', 'b', 'b', 'a', 'c', 'z']
+	];
+
+	// Object that holds values for each zone, separated by difficulty
+	var vZones = {
+		z : { 1 : 44,	2 : 64,	3 : 99 },
+		c : { 1 : -12,	2 : -8,	3 : -8 },
+		a : { 1 : 8,	2 : 8,	3 : 8 },
+		b : { 1 : 8,	2 : 8,	3 : 6 },
+		x : { 1 : -12,	2 : -16, 3 : -24 },
+		y : { 1 : 1,	2 : -2,	3 : -4 },
+		v : { 1 : 1,	2 : 0,	3 : -3 },
+		d : { 1 : 1,	2 : 8,	3 : 7 },
+		e : { 1 : 1,	2 : 6,	3 : 4 },
+		f : { 1 : 1,	2 : 1,	3 : 0 }
 	};
 
 	if (moves > 0) {
@@ -415,37 +424,10 @@ Board.prototype.getAiMove = function(moves) {
 			for (var j = 0; j < this.cols; j++) {
 				// If a piece is found on the board, calculate it's value
 				if (this.spaces[i][j] != undefined) {
-					// If piece lies on a corner
-					if ((i === 0 && j === 0) || (i === 0 && j === 7) ||
-						(i === 7 && j === 0) || (i === 7 && j === 7)) {
-						(this.spaces[i][j] === myTurn) ?
-							value += vCorner : value -= vCorner;
-					}
-					// If piece lies adjacent to a corner (negatively valued)
-					if ((i === 0 && j === 1) || (i === 1 && j === 1) ||
-						(i === 1 && j === 0) || (i === 0 && j === 6) ||
-						(i === 1 && j === 6) || (i === 1 && j === 7) ||
-						(i === 6 && j === 0) || (i === 6 && j === 1) ||
-						(i === 7 && j === 1) || (i === 6 && j === 7) ||
-						(i === 6 && j === 6) || (i === 7 && j === 6)) {
-						(this.spaces[i][j] === myTurn) ?
-							value += vCornerAd : value -= vCornerAd;
-					}
-					// If piece lies on the upper or bottom border
-					if (i === 0 || i === 7) {
-						(this.spaces[i][j] === myTurn) ?
-						value += vEdge : value -= vEdge;
-					}
-					// If piece lies on the left or right border
-					if (j === 0 || j === 7) {
-						(this.spaces[i][j] === myTurn) ?
-						value += vEdge : value -= vEdge;
-					}
-					// If piece is anywhere else
-					else {
-						(this.spaces[i][j] === myTurn) ?
-						value += vSpace : value -= vSpace;
-					}
+					// vZones looks up the current space through vMatrix
+					(this.spaces[i][j] === myTurn) ?
+						value += vZones[vMatrix[i][j]][difficulty] :
+						value -= vZones[vMatrix[i][j]][difficulty];
 				}
 			}
 		}
@@ -502,7 +484,7 @@ Board.prototype.getAiMove = function(moves) {
 		// highest value move (which is the final element in the
 		// distIndexes array)
 		var min = distIndexes[distIndexes.length - 1];
-		// If difficulty is set low, amd there are at least three tiers
+		// If difficulty is set low, and there are at least three tiers
 		// move-scores, choose between best or second best instead of
 		// always picking the best move
 		if (difficulty < 2 && distIndexes.length > 3) {
@@ -519,7 +501,7 @@ Board.prototype.getAiMove = function(moves) {
 		decision = spaceValues[randomIndex];
 	}
 
-	console.log('Difficulty is set to ' + difficulty);
+	console.log(this.indent + 'Difficulty is set to ' + difficulty);
 	console.log(this.indent + 'Picking ' + decision + ' to play');
 
 	// Return move to be played
