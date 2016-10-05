@@ -1061,25 +1061,23 @@ Overlay.prototype.update = function(dt) {
 	}
 	// Find if any buttons are pressed
 	for (var i = 0; i < this.buttons.length; i++) {
+		var b = this.buttons[i];
 		// Press button behavior
-		if (mouseDown &&
-			mouseLoc.x >= this.buttons[i].xOrig / 32 - 1 &&
-			mouseLoc.x <=
-			(this.buttons[i].xOrig + this.buttons[i].width) / 32 - 2 &&
-			mouseLoc.y === this.buttons[i].yOrig / 32 - 1) {
-			this.buttons[i].offset = 2;
+		if (mouseDown && mouseLoc.x >= b.xOrig / 32 - 1 &&
+			mouseLoc.x <= (b.xOrig + b.width) / 32 - 2 &&
+			mouseLoc.y === b.yOrig / 32 - 1) {
+			b.offset = 2;
 		}
 		// Button depress behaviour
 		else {
 			// Reset button to raised location
-			this.buttons[i].offset = 0;
+			b.offset = 0;
 			// If button is "clicked" (mouse released over it), then take action
-			if (mouseLoc.x >= this.buttons[i].xOrig / 32 - 1 &&
-				mouseLoc.x <=
-				(this.buttons[i].xOrig + this.buttons[i].width) / 32 - 2 &&
-				mouseLoc.y === this.buttons[i].yOrig / 32 - 1) {
-				if (this.isVisible && this.buttons[i].action && userClick) {
-					this.buttons[i].action();
+			if (mouseLoc.x >= b.xOrig / 32 - 1 &&
+				mouseLoc.x <= (b.xOrig + b.width) / 32 - 2 &&
+				mouseLoc.y === b.yOrig / 32 - 1) {
+				if (this.isVisible && b.action && userClick) {
+					b.action();
 				}
 			}
 		}
